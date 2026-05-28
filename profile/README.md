@@ -195,30 +195,62 @@ Plain-English version:
 - n8n creates folders, sends reminders, and notifies the team.
 - AI is only called from the backend, never from the frontend.
 
+Tools used in this architecture:
+
+- Frontend: Next.js, Tailwind CSS, React Query, Axios, Zustand, Vercel Hobby
+- Backend: NestJS, TypeScript, Drizzle ORM, JWT, Render Free
+- Database: Neon PostgreSQL Free
+- Automation: n8n self-hosted, GitHub Actions
+- AI: Groq free/prototype access, optional Ollama local AI
+- Files: Google Drive Free
+- Notifications: Slack Free, Discord Free
+- Scheduling: Google Calendar Free
+- Project mirroring: Trello Free
+- Diagrams/docs: Eraser.io Free, GitHub Markdown, Google Docs
+
 ```mermaid
 flowchart TB
-  Public["Public Visitors / Leads"] --> Portal["pxl-portal<br/>Frontend Website"]
+  Public["Public Visitors / Leads"] --> Portal["pxl-portal<br/>Frontend Website<br/>Next.js + Tailwind + React Query<br/>Hosted on Vercel Hobby"]
   Client["Client Users"] --> Portal
   Team["Admin / Team Users"] --> Portal
 
-  Portal --> API["pxl-api<br/>Backend / Business Logic Owner"]
-  API --> DB["Neon PostgreSQL<br/>Single Source of Truth"]
+  Portal --> API["pxl-api<br/>Backend / Business Logic Owner<br/>NestJS + TypeScript + Drizzle + JWT<br/>Hosted on Render Free"]
+  API --> DB["Neon PostgreSQL Free<br/>Single Source of Truth"]
 
-  API --> AI["AI Layer<br/>Groq Primary<br/>OpenAI-Compatible Fallback"]
-  API --> Automation["Automation Module"]
+  API --> AI["AI Layer<br/>Groq for prototype/free access<br/>Optional Ollama for local free AI"]
+  API --> Automation["Automation Module<br/>Backend event emitter"]
   Automation --> Logs["automation_logs"]
-  Automation --> N8N["n8n Workflows<br/>Triggered by Backend Events"]
+  Automation --> N8N["n8n Self-Hosted<br/>Business Workflow Automation"]
+  API --> GHA["GitHub Actions Free<br/>Code checks, builds,<br/>workflow JSON validation"]
 
-  N8N --> Drive["Google Drive<br/>File Storage Only"]
-  N8N --> Calendar["Google Calendar<br/>Reminders Only"]
-  N8N --> Slack["Slack<br/>Notifications Only"]
-  N8N --> Discord["Discord<br/>Notifications Only"]
-  N8N --> Trello["Trello<br/>Task/Card Mirroring Only"]
-  N8N --> Social["Social Platforms<br/>Manual Publish / Future API Publish"]
+  N8N --> Drive["Google Drive Free<br/>File Storage Only"]
+  N8N --> Calendar["Google Calendar Free<br/>Reminders Only"]
+  N8N --> Slack["Slack Free<br/>Notifications Only"]
+  N8N --> Discord["Discord Free<br/>Notifications Only"]
+  N8N --> Trello["Trello Free<br/>Task/Card Mirroring Only"]
+  N8N --> Social["Native Social Tools<br/>Meta Business Suite, TikTok Studio,<br/>YouTube Studio, LinkedIn Scheduler"]
 
   Drive --> API
   Social --> API
 ```
+
+## Free Tools By Workflow
+
+| Workflow Area | Free / Free-Tier Tools |
+| --- | --- |
+| Planning and diagrams | GitHub Markdown, Eraser.io Free, Google Docs, Google Sheets |
+| Frontend portal | Next.js, Tailwind CSS, React Query, Axios, Zustand, Vercel Hobby |
+| Backend API | NestJS, TypeScript, Drizzle ORM, JWT, Render Free |
+| Database | Neon PostgreSQL Free |
+| Code automation | GitHub Actions Free |
+| Business automation | n8n self-hosted |
+| AI assistance | Groq prototype/free access, optional Ollama local AI |
+| Client onboarding | PXL Portal, n8n, Google Drive Free, Trello Free, Discord Free |
+| Lead generation | PXL Portal, n8n, Slack Free, Google Calendar Free |
+| Content production | Google Drive Free, Trello Free, Canva Free, CapCut Free, DaVinci Resolve Free |
+| Publishing | Google Calendar Free, Meta Business Suite, TikTok Studio, YouTube Studio, LinkedIn native scheduler |
+| Analytics | Native platform analytics, Google Sheets Free, PXL analytics dashboard |
+| Reporting | Google Docs Free, Google Drive Free, PXL reports module, AI summary drafting |
 
 ## Ownership Rules
 
