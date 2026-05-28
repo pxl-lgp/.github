@@ -51,6 +51,130 @@ This platform does not replace the marketing team. It removes repetitive operati
 | Asset | A file such as a logo, graphic, video, reel, report, or brand document |
 | Source of truth | The official place where correct data is stored |
 
+## Workflow Study Overview
+
+The system is based on the 20-part workflow study for PXL Digital Marketing operations.
+
+Each section below explains one part of the agency workflow in plain language and how it connects to the platform.
+
+1. **Business Structure Overview**
+   - Describes the types of clients PXL supports, such as IT, restaurants, real estate, hospitality, local services, and B2B brands.
+   - In the system, this connects to client profiles, industries, services, and account status.
+
+2. **Core Departments**
+   - Defines the agency areas involved in delivery: client management, strategy, production, publishing, and performance monitoring.
+   - In the system, this connects to role-based access, dashboards, assignments, content tasks, approvals, analytics, and reports.
+
+3. **Client Onboarding Workflow**
+   - Covers how a new client submits business details, goals, social links, brand notes, and file references.
+   - In the system, this connects to the onboarding form, clients table, Google Drive folders, Trello cards, and team notifications.
+
+4. **Content Strategy Workflow**
+   - Covers content pillars, monthly planning, trend research, and campaign direction.
+   - In the system, this connects to content ideas, creative briefs, AI-assisted planning, and the beginning of the content lifecycle.
+
+5. **Content Production Workflow**
+   - Covers the creation of graphics, carousels, stories, posts, and other content assets.
+   - In the system, this connects to content tasks, asset tracking, Google Drive file references, and production statuses.
+
+6. **Reels & Video Workflow**
+   - Covers reel scripts, editing flow, captioning, B-roll suggestions, and short-form video production.
+   - In the system, this connects to reel/video content types, AI reel script generation, and video asset tracking.
+
+7. **Caption Generation Workflow**
+   - Covers SEO captions, Taglish adaptation, CTA generation, hashtag recommendations, and caption drafting.
+   - In the system, this connects to the AI module, caption fields, hashtags, CTA fields, and team editing.
+
+8. **Approval Workflow**
+   - Covers centralized review, client approvals, revision requests, feedback, and reminders.
+   - In the system, this connects to approval pages, approval status, revision count, client feedback, and approval notifications.
+
+9. **Publishing Workflow**
+   - Covers scheduling, cross-platform publishing, hashtag handling, and best-time posting support.
+   - In the system, this connects to scheduled dates, publishing reminders, Google Calendar, and published content status.
+
+10. **Analytics Workflow**
+    - Covers performance tracking, engagement monitoring, dashboards, AI insights, and reporting.
+    - In the system, this connects to analytics records, dashboards, metrics, AI summaries, and reports.
+
+11. **Lead Generation Workflow**
+    - Covers lead capture, CRM tracking, qualification, and follow-up.
+    - In the system, this connects to the public lead form, leads table, Slack notifications, calendar follow-ups, and client conversion.
+
+12. **File Management System**
+    - Covers centralized file storage, searchable assets, version control, and file organization.
+    - In the system, this connects to Google Drive, assets, versions, client folders, content files, approved files, and report files.
+
+13. **Recommended System Architecture**
+    - Defines the main technical structure: frontend portal, backend API, database, AI layer, and automation engine.
+    - In the system, this maps to `pxl-portal`, `pxl-api`, Neon PostgreSQL, Groq/OpenAI-compatible AI, and n8n.
+
+14. **Automation Roadmap**
+    - Organizes automation into quick wins, content automation, and more advanced AI phases.
+    - In the system, this connects to n8n workflows, AI services, automation logs, and future automation improvements.
+
+15. **Recommended Tech Stack**
+    - Defines the tools used to build and host the platform.
+    - In the system, this includes Next.js, NestJS, TypeScript, Drizzle ORM, Neon PostgreSQL, n8n, Groq, Vercel, and Railway/Render.
+
+16. **Database Structure**
+    - Defines the tables needed to store clients, content, analytics, assets, users, approvals, leads, reports, and automation logs.
+    - In the system, this connects to the Drizzle schema and Neon PostgreSQL database.
+
+17. **Ideal Future Workflow**
+    - Shows the optimized end-to-end workflow from client requests to content, analytics, and reporting.
+    - In the system, this is the full lifecycle loop from onboarding to strategy to production to approval to publishing to reporting.
+
+18. **Estimated Impact**
+    - Describes expected improvements such as reduced repetitive work, faster scaling, and more consistent delivery.
+    - In the system, this connects to future metrics like time saved, approval turnaround, content throughput, and reporting speed.
+
+19. **Development Priorities**
+    - Identifies the highest-ROI features to build first: onboarding automation, content assistants, approvals, analytics dashboards, and publishing tools.
+    - In the system, this connects to MVP implementation order and the project checklist.
+
+20. **Final Recommendation**
+    - Recommends building a centralized operations layer powered by AI-assisted workflows, without replacing human strategy or creativity.
+    - In the system, this is the guiding principle for the whole platform.
+
+## Workflow Study Map
+
+This diagram shows how the 20 workflow-study sections connect to one another.
+
+```mermaid
+flowchart TD
+  S1["1. Business Structure Overview<br/>Client types and service categories"] --> S2["2. Core Departments<br/>Who does the work"]
+  S2 --> S3["3. Client Onboarding<br/>Collect client details"]
+  S3 --> S4["4. Content Strategy<br/>Plan campaigns and content pillars"]
+  S4 --> S5["5. Content Production<br/>Create posts, graphics, carousels"]
+  S5 --> S6["6. Reels & Video<br/>Scripts, edits, short-form video"]
+  S5 --> S7["7. Caption Generation<br/>Captions, CTAs, hashtags"]
+  S6 --> S8["8. Approval Workflow<br/>Client review and revisions"]
+  S7 --> S8
+  S8 --> S9["9. Publishing Workflow<br/>Schedule and publish"]
+  S9 --> S10["10. Analytics Workflow<br/>Track performance"]
+  S10 --> S12["12. File Management<br/>Store assets and reports"]
+  S10 --> S11["11. Lead Generation<br/>Capture and qualify leads"]
+  S10 --> S17["17. Ideal Future Workflow<br/>Continuous improvement loop"]
+  S11 --> S3
+  S17 --> S4
+
+  S13["13. Recommended Architecture<br/>Portal, API, DB, AI, automation"] --> S3
+  S13 --> S4
+  S13 --> S5
+  S13 --> S8
+  S13 --> S10
+  S13 --> S11
+  S13 --> S12
+
+  S14["14. Automation Roadmap<br/>Quick wins to advanced AI"] --> S13
+  S15["15. Recommended Tech Stack<br/>Tools and hosting"] --> S13
+  S16["16. Database Structure<br/>Tables and records"] --> S13
+  S18["18. Estimated Impact<br/>Time saved and consistency"] --> S19["19. Development Priorities<br/>What to build first"]
+  S19 --> S14
+  S20["20. Final Recommendation<br/>Centralized AI-assisted operations layer"] --> S13
+```
+
 ## Repository Structure
 
 | Repository | Purpose | Stack |
@@ -525,4 +649,3 @@ Still required before production:
 ## Strategic Direction
 
 PXL Automation should remain a centralized operations layer. The system should help the team move faster, reduce duplicated work, standardize delivery, and make reporting easier while keeping strategy, taste, client judgment, and creative quality in human hands.
-
