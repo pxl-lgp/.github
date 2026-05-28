@@ -1,153 +1,359 @@
-# Human vs Automation Workflow
+# PXL Automation
 
-This diagram shows where humans do the work and where PXL Automation handles repeatable workflow tasks.
+PXL Automation is a centralized AI-assisted operations platform for a digital marketing agency. It is designed to reduce repetitive operational work, centralize client and content workflows, improve reporting consistency, and help the team scale without replacing human creativity, strategy, or client relationships.
 
-## Operating Principle
+The platform supports the full digital marketing operations lifecycle:
+
+- Client onboarding
+- Content strategy
+- Content production
+- Reels and video planning
+- Caption, CTA, hashtag, and brief generation
+- Client approvals and revision tracking
+- Publishing reminders
+- Analytics collection
+- Lead generation and internal CRM workflows
+- File and asset management
+- AI-assisted reporting
+- Centralized dashboards
+- n8n automation triggers
+- Role-based access for admin, team, and clients
+
+## Core Principle
 
 ```text
 Automation prepares, routes, records, reminds, and drafts.
 Humans decide, create, review, approve, publish, and build relationships.
 ```
 
-## End-to-End Workflow
+PXL Automation is not meant to replace creative work or social platforms. It acts as an operations layer around the agency’s existing tools and workflows.
+
+## Repository Structure
+
+| Repository | Purpose | Stack |
+| --- | --- | --- |
+| `pxl-api` | Backend API and business logic | NestJS, TypeScript, Drizzle ORM, Neon PostgreSQL, JWT |
+| `pxl-portal` | Admin, client, and public portal | Next.js, TypeScript, Tailwind CSS, React Query, Axios, Zustand |
+| `pxl-n8n-workflows` | Importable automation workflows | n8n workflow JSON |
+
+## System Architecture
 
 ```mermaid
-flowchart TD
-  A["Public visitor or prospective client"] --> B{"Entry point"}
+flowchart TB
+  Public["Public Visitors / Leads"] --> Portal["pxl-portal<br/>Next.js Frontend"]
+  Client["Client Users"] --> Portal
+  Team["Admin / Team Users"] --> Portal
 
-  B --> C["Lead form"]
-  B --> D["Onboarding form"]
+  Portal --> API["pxl-api<br/>NestJS API<br/>Business Logic Owner"]
+  API --> DB["Neon PostgreSQL<br/>Single Source of Truth"]
 
-  C --> E["Automation: save lead to database"]
-  E --> F["Automation: notify sales in Slack/Discord"]
-  F --> G["Automation: create follow-up reminder"]
-  G --> H["Human: qualify lead, contact prospect, prepare proposal"]
-  H --> I{"Lead won?"}
-  I -->|Yes| D
-  I -->|No| J["Human: close or nurture lead"]
+  API --> AI["AI Layer<br/>Groq Primary<br/>OpenAI-Compatible Fallback"]
+  API --> Automation["Automation Module"]
+  Automation --> Logs["automation_logs"]
+  Automation --> N8N["n8n Workflows<br/>Triggered by Backend Events"]
 
-  D --> K["Automation: save client onboarding data"]
-  K --> L["Automation: create Google Drive folder structure"]
-  L --> M["Automation: create Trello onboarding card"]
-  M --> N["Automation: notify team"]
-  N --> O["Human: review onboarding answers and clarify missing details"]
+  N8N --> Drive["Google Drive<br/>File Storage Only"]
+  N8N --> Calendar["Google Calendar<br/>Scheduling / Reminders Only"]
+  N8N --> Slack["Slack<br/>Notifications Only"]
+  N8N --> Discord["Discord<br/>Notifications Only"]
+  N8N --> Trello["Trello<br/>Task/Card Mirroring Only"]
+  N8N --> Social["Social Platforms<br/>Manual Publish / Future API Publish"]
 
-  O --> P["Human: define strategy, goals, offers, content pillars"]
-  P --> Q["Automation: AI drafts content ideas and creative briefs"]
-  Q --> R["Human: edit strategy and approve monthly direction"]
-
-  R --> S["Human: create content tasks and production plan"]
-  S --> T["Automation: track content status and due dates"]
-  T --> U["Human: design graphics, edit videos, produce reels, prepare assets"]
-  U --> V["Automation: store file references and versions from Google Drive"]
-
-  V --> W{"Needs AI support?"}
-  W -->|Caption| X["Automation: generate captions, CTAs, hashtags, SEO text, Taglish variants"]
-  W -->|Reel or video| Y["Automation: generate hook, scenes, overlay text, CTA, B-roll ideas"]
-  W -->|Brief| Z["Automation: generate creative brief draft"]
-  W -->|No| AA["Human: continue production"]
-
-  X --> AB["Human: polish caption and brand voice"]
-  Y --> AC["Human: refine script and edit video"]
-  Z --> AD["Human: adjust brief for real strategy"]
-  AA --> AE["Human: internal review"]
-  AB --> AE
-  AC --> AE
-  AD --> AE
-
-  AE --> AF{"Internal review passed?"}
-  AF -->|No| U
-  AF -->|Yes| AG["Automation: move content to client approval"]
-  AG --> AH["Automation: notify client/team"]
-
-  AH --> AI["Human client: review content preview, caption, hashtags, platform, schedule"]
-  AI --> AJ{"Client decision"}
-
-  AJ -->|Approve| AK["Automation: save approval and update status to APPROVED"]
-  AJ -->|Request revision| AL["Automation: save feedback, increment revision count, update status"]
-  AL --> AM["Human: interpret feedback and revise content"]
-  AM --> AE
-
-  AK --> AN["Human: final publish check"]
-  AN --> AO["Automation: create Google Calendar publishing reminder"]
-  AO --> AP["Human: publish manually to social platforms for MVP"]
-  AP --> AQ["Automation: update content status to PUBLISHED"]
-
-  AQ --> AR["Automation: collect or import analytics metrics"]
-  AR --> AS["Automation: update dashboards"]
-  AS --> AT["Automation: AI drafts analytics summary and recommendations"]
-  AT --> AU["Human: review insights and write final recommendations"]
-  AU --> AV["Automation: create report record and store Drive report URL"]
-  AV --> AW["Automation: notify client/team report is ready"]
-  AW --> AX["Human: discuss results with client"]
-  AX --> AY["Human + Automation: feed insights into next month strategy"]
-  AY --> P
+  Drive --> API
+  Social --> API
 ```
 
-## Workflow Responsibility Map
+## Ownership Rules
 
-| Workflow Area | Human Work | Automation Work |
-| --- | --- | --- |
-| Lead generation | Qualify leads, contact prospects, prepare proposals, close deals | Capture lead form, save to CRM, notify sales, create follow-up reminder |
-| Client onboarding | Review client context, clarify missing details, decide kickoff priorities | Save onboarding form, create Drive folders, create Trello card, notify team |
-| Strategy | Define content pillars, offers, campaign direction, monthly priorities | Draft content ideas, summarize inputs, create first-pass creative briefs |
-| Production | Design graphics, edit videos, create reels, polish creative assets | Track status, manage task records, store asset links and versions |
-| Captions | Edit tone, brand voice, message clarity, final CTA | Generate caption drafts, hashtags, SEO text, CTA options, Taglish variants |
-| Reels and video | Choose hook, refine script, shoot/edit video, approve final cut | Generate script draft, scene flow, overlay suggestions, B-roll ideas |
-| Internal review | Judge quality, check brand fit, request fixes | Move status, track tasks, preserve revision history |
-| Client approval | Approve or request revision, provide feedback | Route approval, save feedback, notify team, update statuses |
-| Publishing | Final check, manual publishing for MVP | Schedule reminders, update publishing status, log workflow events |
-| Analytics | Interpret results, decide strategic changes | Store metrics, update dashboards, draft AI insights |
-| Reporting | Finalize client narrative and recommendations | Generate report draft, save report URL, notify client/team |
-| File management | Organize final deliverables and decide asset usage | Create folder structure, store Drive references, track versions |
+- Neon PostgreSQL is the single source of truth.
+- The backend owns all business logic.
+- The frontend only displays UI and sends API requests.
+- AI keys are never exposed to the frontend.
+- n8n reacts to backend events through webhooks.
+- Google Drive stores files only.
+- Slack and Discord send notifications only.
+- Google Calendar stores reminders only.
+- Trello mirrors tasks/cards only.
+- Social platforms are publishing destinations and metric sources, not the operational source of truth.
 
-## Automation Event Flow
+## Main Workflow
 
 ```mermaid
 flowchart LR
-  A["Backend business event"] --> B["Automation Module"]
-  B --> C["automation_logs"]
-  B --> D["n8n webhook"]
+  Lead["Lead Form"] --> Leads["Leads Module"]
+  Leads --> Qualify["Human: Qualify Lead"]
+  Qualify --> Onboarding["Client Onboarding"]
 
-  D --> E{"Event type"}
-  E --> F["client-created"]
-  E --> G["content-ready"]
-  E --> H["approval-updated"]
-  E --> I["lead-created"]
-  E --> J["report-created"]
+  Onboarding --> Clients["Clients Module"]
+  Clients --> Strategy["Human: Content Strategy"]
+  Strategy --> Briefs["AI: Briefs / Ideas"]
+  Briefs --> Production["Human: Content Production"]
 
-  F --> K["Google Drive folders"]
-  F --> L["Trello card"]
-  F --> M["Discord notification"]
+  Production --> Captions["AI: Captions / Hashtags / Reel Scripts"]
+  Captions --> Review["Human: Internal Review"]
+  Review --> Approval["Client Approval"]
 
-  G --> N["Client/team notification"]
-  G --> O["Publishing reminder if scheduled"]
+  Approval -->|Approved| Publishing["Publishing Reminder / Schedule"]
+  Approval -->|Revision Requested| Production
 
-  H --> P["Approved notification"]
-  H --> Q["Revision notification"]
-
-  I --> R["Sales notification"]
-  I --> S["Follow-up calendar reminder"]
-
-  J --> T["Report-ready notification"]
-  J --> U["Client/team handoff"]
+  Publishing --> Published["Manual Publish / Future API Publish"]
+  Published --> Analytics["Analytics Import"]
+  Analytics --> Reports["AI-Assisted Reports"]
+  Reports --> Strategy
 ```
 
-## Status Lifecycle
+## Human vs Automation Responsibilities
+
+| Area | Human Work | Automation Work |
+| --- | --- | --- |
+| Lead generation | Qualify leads, contact prospects, prepare proposals, close deals | Capture lead form, save lead, notify sales, create follow-up reminder |
+| Client onboarding | Review business context, clarify missing details, decide kickoff priorities | Save onboarding data, create Drive folders, create Trello card, notify team |
+| Strategy | Define content pillars, offers, campaign direction, monthly priorities | Draft ideas, summarize inputs, create first-pass briefs |
+| Production | Design graphics, edit videos, produce reels, polish creative assets | Track statuses, manage task records, store asset links and versions |
+| Captions | Edit tone, brand voice, message clarity, final CTA | Generate captions, hashtags, SEO text, CTA options, Taglish variants |
+| Reels and video | Choose hook, refine script, shoot/edit video, approve final cut | Generate script drafts, scene flow, overlay text, B-roll ideas |
+| Approvals | Review content, approve, request revisions, interpret feedback | Route approvals, save feedback, track revision count, notify team |
+| Publishing | Final publish check and MVP manual publishing | Create calendar reminders, update publishing status, log workflow events |
+| Analytics | Interpret results and make strategic decisions | Store metrics, update dashboards, draft AI insights |
+| Reporting | Finalize recommendations and client narrative | Generate report draft, save report URL, notify client/team |
+
+## Backend: `pxl-api`
+
+The backend is a modular NestJS API responsible for authentication, business logic, data validation, database writes, automation events, and AI provider calls.
+
+### Backend Stack
+
+- NestJS
+- TypeScript
+- Drizzle ORM
+- Neon PostgreSQL
+- REST API
+- JWT authentication
+- Role guards
+- dotenv
+- class-validator
+- class-transformer
+- Groq/OpenAI-compatible AI calls
+
+### Backend Modules
+
+- `auth`
+- `users`
+- `clients`
+- `content`
+- `approvals`
+- `assets`
+- `leads`
+- `analytics`
+- `reports`
+- `automation`
+- `ai`
+- `notifications`
+- `calendar`
+- `integrations`
+
+### Core API Areas
+
+- `POST /auth/login`
+- `POST /auth/register`
+- `GET /auth/me`
+- `/clients`
+- `/content`
+- `/approvals`
+- `/assets`
+- `/leads`
+- `/analytics`
+- `/reports`
+- `/automation/*`
+- `/ai/generate-caption`
+- `/ai/generate-brief`
+- `/ai/generate-reel-script`
+- `/ai/generate-report-summary`
+- `/ai/generate-hashtags`
+
+## Frontend: `pxl-portal`
+
+The frontend is a Next.js portal for internal users, client users, and public form submissions. It does not contain business logic or secrets. All data is fetched through the backend API.
+
+### Frontend Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- React Query
+- Axios
+- Zustand
+
+### Admin Pages
+
+- `/admin/dashboard`
+- `/admin/clients`
+- `/admin/clients/[id]`
+- `/admin/content`
+- `/admin/content/[id]`
+- `/admin/approvals`
+- `/admin/calendar`
+- `/admin/leads`
+- `/admin/reports`
+- `/admin/analytics`
+
+### Client Pages
+
+- `/client/dashboard`
+- `/client/approvals`
+- `/client/assets`
+- `/client/reports`
+
+### Public Pages
+
+- `/onboarding`
+- `/lead-form`
+- `/login`
+
+## Database
+
+The database is hosted on Neon PostgreSQL and managed with Drizzle ORM.
+
+### Main Tables
+
+- `users`
+- `clients`
+- `content_items`
+- `content_tasks`
+- `approvals`
+- `assets`
+- `leads`
+- `analytics`
+- `reports`
+- `automation_logs`
+- `notifications`
+- `calendar_events`
+
+### Content Lifecycle
 
 ```mermaid
 stateDiagram-v2
   [*] --> IDEA
-  IDEA --> DRAFTING: Human strategy plus AI brief
-  DRAFTING --> DESIGNING: Human production starts
-  DESIGNING --> INTERNAL_REVIEW: Asset/caption ready
-  INTERNAL_REVIEW --> CLIENT_APPROVAL: Human approves for client review
-  CLIENT_APPROVAL --> APPROVED: Client approves
-  CLIENT_APPROVAL --> REVISION_REQUESTED: Client requests changes
-  REVISION_REQUESTED --> DRAFTING: Human revises
-  APPROVED --> SCHEDULED: Team schedules
-  SCHEDULED --> PUBLISHED: Team publishes
-  PUBLISHED --> REPORTED: Analytics and report complete
-  REPORTED --> IDEA: Insights feed next strategy cycle
+  IDEA --> DRAFTING
+  DRAFTING --> DESIGNING
+  DESIGNING --> INTERNAL_REVIEW
+  INTERNAL_REVIEW --> CLIENT_APPROVAL
+  CLIENT_APPROVAL --> APPROVED
+  CLIENT_APPROVAL --> REVISION_REQUESTED
+  REVISION_REQUESTED --> DRAFTING
+  APPROVED --> SCHEDULED
+  SCHEDULED --> PUBLISHED
+  PUBLISHED --> REPORTED
+  REPORTED --> IDEA
 ```
+
+## Automation: `pxl-n8n-workflows`
+
+n8n handles operational automation through backend-triggered webhooks.
+
+### Automation Events
+
+- `client-created`
+- `content-ready`
+- `approval-updated`
+- `lead-created`
+- `report-created`
+- `monthly-report-schedule`
+
+### Automation Examples
+
+- Client onboarding creates Google Drive folders, Trello cards, and Discord notifications.
+- Content ready events notify the team/client and prepare publishing reminders.
+- Approval updates notify the team when content is approved or needs revision.
+- Lead creation notifies sales and creates a follow-up reminder.
+- Report creation notifies the team/client that reports are ready.
+
+## Google Drive Folder Structure
+
+```text
+PXL Clients/
+  Client Name/
+    01 Brand Assets/
+    02 Monthly Content/
+    03 Reels/
+    04 Graphics/
+    05 Approved/
+    06 Published/
+    07 Reports/
+```
+
+Google Drive stores files only. The backend stores Drive folder IDs, file IDs, URLs, asset versions, and metadata in Neon PostgreSQL.
+
+## Roles
+
+| Role | Description |
+| --- | --- |
+| `ADMIN` | Full system access and operational control |
+| `TEAM` | Internal production, strategy, approval, reporting, and client management access |
+| `CLIENT` | Client-facing access to approvals, assets, reports, and dashboards |
+
+## MVP Flow
+
+1. A lead submits the public lead form.
+2. The backend saves the lead and triggers sales notifications.
+3. A qualified lead becomes a client.
+4. The client submits onboarding information.
+5. The backend saves the client and triggers n8n.
+6. n8n creates Google Drive folders, Trello cards, and notifications.
+7. The team creates content strategy and content items.
+8. AI assists with briefs, captions, hashtags, and reel scripts.
+9. The team reviews and sends content for client approval.
+10. The client approves or requests revisions.
+11. Approved content is scheduled and published.
+12. Analytics are imported or entered.
+13. AI assists with report summaries and recommendations.
+14. Reports are delivered to the client.
+15. Analytics and report insights feed the next month’s strategy.
+
+## Current Status
+
+The MVP scaffold includes:
+
+- Separate backend and frontend repositories
+- Drizzle database schema
+- Seed script
+- REST API modules
+- JWT auth structure
+- RBAC guard structure
+- Admin/client/public frontend routes
+- Reusable UI components
+- Axios API client
+- React Query provider
+- Zustand UI store
+- Importable n8n workflow JSON
+- Root project checklist
+- Human vs automation workflow documentation
+
+Still required before production:
+
+- Install dependencies
+- Configure Neon PostgreSQL
+- Run migrations
+- Configure real environment variables
+- Import and activate n8n workflows
+- Attach Google, Trello, Slack, and Discord credentials
+- Connect forms and dashboards to live data
+- Add tests
+- Harden authentication and client-specific data access
+- Deploy frontend and backend
+- Run a full production-like workflow test
+
+## Deployment Targets
+
+| Layer | Recommended Host |
+| --- | --- |
+| Frontend | Vercel |
+| Backend | Railway or Render |
+| Database | Neon PostgreSQL |
+| Automation | n8n Cloud or self-hosted n8n |
+| Files | Google Drive |
+
+## Strategic Direction
+
+PXL Automation should remain a centralized operations layer. The system should help the team move faster, reduce duplicated work, standardize delivery, and make reporting easier while keeping strategy, taste, client judgment, and creative quality in human hands.
 
