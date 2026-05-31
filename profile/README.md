@@ -177,11 +177,16 @@ flowchart TD
 
 ## Repository Structure
 
-| Repository | Purpose | Stack |
+| Folder | Purpose | Stack |
 | --- | --- | --- |
 | `pxl-api` | Backend API, database access, business rules, AI calls, automation events | NestJS, TypeScript, Drizzle ORM, Neon PostgreSQL, JWT |
 | `pxl-portal` | Admin portal, client portal, public onboarding form, public lead form | Next.js, TypeScript, Tailwind CSS, React Query, Axios, Zustand |
 | `pxl-n8n-workflows` | Importable workflow automations | n8n workflow JSON |
+| `docs` | Planning, standards, architecture, and workflow documentation | Markdown |
+
+## User Manual
+
+For the full operating guide, see [docs/user-manual.md](docs/user-manual.md).
 
 ## System Architecture
 
@@ -637,36 +642,187 @@ PXL Clients/
 
 ## Current Status
 
-The MVP scaffold includes:
+Phase 1 is the current project stage.
 
-- Separate backend and frontend repositories
-- Drizzle database schema
-- Seed script
-- REST API modules
-- JWT auth structure
-- RBAC guard structure
-- Admin/client/public frontend routes
-- Reusable UI components
+The foundation now includes:
+
+- Root workspace structure
+- `pxl-api` backend placeholder
+- `pxl-portal` frontend placeholder
+- `pxl-n8n-workflows` automation placeholder
+- `docs` planning and standards folder
+- Environment variable examples
+- Root `.gitignore`
+- Phase plan and project standards documentation
+
+The Phase 1 backend scaffold now includes:
+
+- NestJS application structure
+- Environment validation
+- `GET /api/health`
+- Drizzle ORM configuration
+- Initial PostgreSQL schema
+- Generated SQL migration
+- TypeScript, ESLint, and Prettier setup
+
+The Phase 2 auth scaffold now includes:
+
+- Password hashing with bcryptjs
+- JWT login
+- Admin-only user registration
+- `ADMIN`, `TEAM`, and `CLIENT` role support
+- JWT auth guard
+- Role guard
+- Current user endpoint
+- Admin seed script
+
+The Phase 3 client onboarding backend scaffold now includes:
+
+- Protected client creation endpoint
+- Protected client list endpoint
+- Protected client detail endpoint
+- Protected client update endpoint
+- Swagger documentation for client endpoints
+- Automatic `client-created` automation log entry when a client is created
+
+The Phase 4 portal scaffold now includes:
+
+- Next.js frontend
+- Login screen
+- Protected admin shell
+- Admin dashboard
+- Client list screen
+- Client creation form
+- Client detail and edit screen
+- Public onboarding route scaffold
 - Axios API client
 - React Query provider
-- Zustand UI store
-- Importable n8n workflow JSON
-- Root project checklist
-- Human vs automation workflow documentation
 
-Still required before production:
+The Phase 5 automation scaffold now includes:
 
-- Install dependencies
-- Configure Neon PostgreSQL
-- Run migrations
-- Configure real environment variables
-- Import and activate n8n workflows
-- Attach Google, Trello, Slack, and Discord credentials
-- Connect forms and dashboards to live data
-- Add tests
-- Harden authentication and client-specific data access
-- Deploy frontend and backend
-- Run a full production-like workflow test
+- Backend automation delivery service
+- n8n webhook delivery for configured events
+- Automation log status updates
+- Protected `GET /api/automation/logs`
+- Dashboard automation log table
+- Importable `client-created` n8n workflow JSON
+
+The Phase 6 content workflow scaffold now includes:
+
+- Protected content API
+- Client-linked content items
+- Content status lifecycle tracking
+- Admin content list/create screen
+- Admin content detail/edit screen
+- Dashboard production metric
+
+The Phase 7 approval workflow scaffold now includes:
+
+- Protected approval API
+- Send content for approval
+- Approve content
+- Request revisions with feedback
+- Automatic content status updates
+- Admin approvals screen
+- Dashboard pending approval metric
+
+The Phase 8 AI assistance scaffold now includes:
+
+- Protected AI generation API
+- Caption draft generation
+- Hashtag suggestion generation
+- Reel script draft generation
+- Creative brief draft generation
+- Fallback drafts when no provider key is configured
+- Content detail AI assistant panel
+- Human-reviewed apply actions for captions and hashtags
+
+The Phase 9 publishing scaffold now includes:
+
+- Protected content schedule endpoint
+- Protected content publish endpoint
+- `content-scheduled` automation event
+- Importable `content-scheduled` n8n workflow JSON
+- Content detail publishing panel
+- Publishing status updates for scheduled and published content
+
+The Phase 10 analytics and reports scaffold now includes:
+
+- Protected analytics API
+- Manual performance metric entry for published content
+- Admin analytics totals and records screen
+- Protected reports API
+- Admin report records screen
+- Report summaries and Drive report links
+
+The Phase 11 lead generation scaffold now includes:
+
+- Public lead capture API
+- Public lead form
+- Protected admin lead management
+- Lead qualification statuses
+- Lead-to-client conversion
+- `lead-created` automation event
+- Importable `lead-created` n8n workflow
+
+The Phase 12 public onboarding scaffold now includes:
+
+- Public onboarding API
+- Public onboarding form
+- Automatic `ONBOARDING` client creation
+- Reuse of the existing `client-created` automation path
+- Admin review through the clients screen
+
+The Phase 13 file and asset management scaffold now includes:
+
+- Protected assets API
+- Admin assets screen
+- Client-linked Drive URL records
+- Optional content-linked file references
+- Asset type, version, and tag tracking
+
+The Phase 14 Google Drive automation scaffold now includes:
+
+- Automation callback endpoint for client Drive folder URLs
+- Shared-secret callback protection
+- Updated `client-created` n8n workflow
+- Google Drive client root folder creation
+- Standard PXL subfolder creation
+- Automatic saving of `driveFolderUrl` on the client profile
+
+The Phase 15 client portal scaffold now includes:
+
+- Protected client portal API
+- Client workspace lookup by matching user email to client email
+- Role-aware login redirect for `ADMIN`, `TEAM`, and `CLIENT`
+- Client dashboard at `/client/dashboard`
+- Client-only visibility for content, approvals, assets, and reports
+- Client approval and revision request actions
+- Admin users screen for creating `ADMIN`, `TEAM`, and `CLIENT` login accounts
+- Public landing page for visitors at `/`
+- Public funnel page for focused inquiry conversion at `/funnel`
+
+Still required before a working MVP:
+
+- Import and activate the n8n `client-created` workflow
+- Configure `N8N_WEBHOOK_BASE_URL`
+- Configure matching `AUTOMATION_WEBHOOK_SECRET`
+- Smoke test client creation through the full portal to n8n path
+- Smoke test content creation and status updates from the portal
+- Smoke test approval decisions from the portal
+- Smoke test AI draft generation from content detail pages
+- Smoke test content scheduling from the portal to n8n
+- Smoke test marking scheduled content as published
+- Smoke test analytics metric entry for published content
+- Smoke test creating a client report record
+- Smoke test public lead submission and admin conversion
+- Smoke test public onboarding submission
+- Smoke test asset creation with a real Drive URL
+- Smoke test n8n Google Drive folder creation from `client-created`
+- Smoke test client portal login with a `CLIENT` user
+- Smoke test admin user creation from `/admin/users`
+- Add tests before production use
+- Configure deployment and real environment variables
 
 ## Deployment Targets
 
@@ -681,3 +837,982 @@ Still required before production:
 ## Strategic Direction
 
 PXL Automation should remain a centralized operations layer. The system should help the team move faster, reduce duplicated work, standardize delivery, and make reporting easier while keeping strategy, taste, client judgment, and creative quality in human hands.
+
+<!-- USER_MANUAL_START -->
+
+## Complete User Manual
+
+This guide explains how to use the PXL Automation platform from public inquiry to client onboarding, content production, approval, publishing, analytics, reporting, and automation.
+
+## 1. What This Project Is
+
+PXL Automation is a digital marketing operations system for managing:
+
+- Public inquiries and lead capture
+- Client onboarding
+- Client records and account status
+- Content planning and production
+- AI-assisted captions, hashtags, reel scripts, and briefs
+- Client approvals and revision requests
+- Publishing schedules and reminders
+- Analytics records
+- Reports
+- Asset and Drive link tracking
+- Client portal access
+- n8n automation workflows
+
+The system has three main parts:
+
+| Area | Purpose |
+| --- | --- |
+| `pxl-portal` | The website and portal people use |
+| `pxl-api` | The backend API, database rules, auth, and automation events |
+| `pxl-n8n-workflows` | Importable n8n workflows for external automation |
+
+## 2. User Roles
+
+| Role | What They Can Do |
+| --- | --- |
+| `ADMIN` | Full admin access, create users, manage clients, content, leads, reports, assets, approvals |
+| `TEAM` | Internal operations access for client/content workflow, but cannot create users |
+| `CLIENT` | Client portal access only, can view their workspace and submit approval decisions |
+
+## 3. Public Pages
+
+### Homepage
+
+URL:
+
+```text
+/
+```
+
+Purpose:
+
+- Public-facing PXL Digital landing page
+- Explains services, process, trust points, and workflow
+- Links visitors to inquiry, onboarding, funnel, and login
+
+### Funnel Page
+
+URL:
+
+```text
+/funnel
+```
+
+Purpose:
+
+- Focused conversion page for visitors who may become leads
+- Explains the inquiry-to-onboarding path
+- Sends users to the lead form
+
+### Lead Form
+
+URL:
+
+```text
+/lead-form
+```
+
+Purpose:
+
+- Captures new business inquiries
+- Creates a lead record in the backend
+- Can trigger the `lead-created` n8n automation
+
+Typical fields:
+
+- Business name
+- Contact person
+- Email
+- Phone
+- Source
+- Message
+
+### Public Onboarding Form
+
+URL:
+
+```text
+/onboarding
+```
+
+Purpose:
+
+- Lets a client submit business information
+- Creates a client record with `ONBOARDING` status
+- Triggers the `client-created` automation path
+- Can create a Google Drive folder through n8n if the workflow is active
+
+Typical fields:
+
+- Business name
+- Industry
+- Contact person
+- Email
+- Phone
+- Facebook
+- Instagram
+- Website
+- Services needed
+- Goals
+- Brand notes
+
+## 4. Login
+
+URL:
+
+```text
+/login
+```
+
+After login:
+
+| Role | Redirect |
+| --- | --- |
+| `ADMIN` | `/admin/dashboard` |
+| `TEAM` | `/admin/dashboard` |
+| `CLIENT` | `/client/dashboard` |
+
+Client login depends on email matching.
+
+Example:
+
+If the client record email is:
+
+```text
+client@example.com
+```
+
+Then the client user account must also use:
+
+```text
+client@example.com
+```
+
+If the email does not match a client record, the client can log in, but the client dashboard will not find a linked workspace.
+
+## 5. Admin Dashboard
+
+URL:
+
+```text
+/admin/dashboard
+```
+
+Purpose:
+
+- Shows high-level account counts
+- Shows client workflow status
+- Shows recent automation logs
+
+Dashboard metrics include:
+
+- Active clients
+- Onboarding clients
+- Paused clients
+- Content in production
+- Pending approvals
+
+Automation logs show recent backend-to-n8n events such as:
+
+- `client-created`
+- `lead-created`
+- `content-scheduled`
+
+Statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `PENDING` | Event was logged and waiting/delivery started |
+| `SENT` | Event was sent to webhook |
+| `SUCCEEDED` | n8n responded successfully |
+| `FAILED` | n8n or callback failed |
+
+## 6. Managing Users
+
+URL:
+
+```text
+/admin/users
+```
+
+Only `ADMIN` users can create users.
+
+You can create:
+
+- Admin users
+- Team users
+- Client users
+
+Required fields:
+
+- Name
+- Email
+- Role
+- Temporary password
+
+For client users:
+
+- Select role `CLIENT`
+- Use the exact same email as the client record
+- Give the email and temporary password to the client
+- Client logs in through `/login`
+
+## 7. Managing Leads
+
+URL:
+
+```text
+/admin/leads
+```
+
+Purpose:
+
+- Review public inquiries
+- Update lead status
+- Convert qualified leads into clients
+
+Lead statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `NEW` | Newly submitted lead |
+| `CONTACTED` | Someone has reached out |
+| `QUALIFIED` | Good-fit lead |
+| `WON` | Converted or ready to convert |
+| `LOST` | Not moving forward |
+
+Recommended lead workflow:
+
+1. Lead submits `/lead-form`
+2. Admin reviews in `/admin/leads`
+3. Update status to `CONTACTED`
+4. If qualified, update to `QUALIFIED`
+5. If accepted, convert to client
+6. New client appears in `/admin/clients`
+
+## 8. Managing Clients
+
+URL:
+
+```text
+/admin/clients
+```
+
+Purpose:
+
+- View all clients
+- Create clients manually
+- Open client detail pages
+- Update onboarding and account information
+
+Client statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `LEAD` | Potential client |
+| `ONBOARDING` | New client still being prepared |
+| `ACTIVE` | Active client |
+| `PAUSED` | Temporarily paused |
+| `ARCHIVED` | No longer active |
+
+Client detail page:
+
+```text
+/admin/clients/[id]
+```
+
+You can update:
+
+- Business name
+- Industry
+- Contact person
+- Email
+- Phone
+- Social links
+- Services needed
+- Goals
+- Brand notes
+- Status
+- Drive folder URL
+
+If Google Drive automation is working, the Drive folder URL is saved automatically after n8n creates the folder.
+
+## 9. Client Portal
+
+URL:
+
+```text
+/client/dashboard
+```
+
+Purpose:
+
+- Client-facing workspace
+- Shows only the linked client’s data
+- Lets clients review content and submit approval decisions
+
+Client dashboard includes:
+
+- Client status
+- Client workspace details
+- Drive folder link
+- Content items
+- Approvals
+- Assets
+- Reports
+
+Client approval actions:
+
+- Approve
+- Request revision with feedback
+
+When a client approves:
+
+- Approval status becomes `APPROVED`
+- Content status becomes `APPROVED`
+
+When a client requests revision:
+
+- Approval status becomes `REVISION_REQUESTED`
+- Content status becomes `REVISION_REQUESTED`
+- Revision count increases
+- Feedback is saved
+
+## 10. Content Workflow
+
+URL:
+
+```text
+/admin/content
+```
+
+Purpose:
+
+- Create and manage client-linked content items
+- Track production status
+- Use AI drafting tools
+- Schedule or mark published content
+
+Content detail page:
+
+```text
+/admin/content/[id]
+```
+
+Content statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `IDEA` | Initial idea |
+| `DRAFTING` | Caption/brief drafting |
+| `DESIGNING` | Design or production |
+| `INTERNAL_REVIEW` | Team review |
+| `CLIENT_APPROVAL` | Sent to client |
+| `APPROVED` | Client approved |
+| `REVISION_REQUESTED` | Client requested changes |
+| `SCHEDULED` | Scheduled for publishing |
+| `PUBLISHED` | Published manually |
+| `REPORTED` | Included in reporting |
+
+Recommended content workflow:
+
+1. Create content item
+2. Draft caption or creative brief
+3. Move status through production
+4. Send for approval
+5. Client approves or requests revision
+6. Schedule approved content
+7. Mark as published after manual publishing
+8. Add analytics
+9. Create report
+
+## 11. AI Assistant
+
+Available on:
+
+```text
+/admin/content/[id]
+```
+
+AI can generate:
+
+- Caption drafts
+- Hashtag suggestions
+- Reel scripts
+- Creative briefs
+
+Important rule:
+
+AI output is a draft only. A human should always review and edit before publishing.
+
+If no AI API key is configured, the backend returns fallback drafts so the workflow can still be tested.
+
+## 12. Approval Workflow
+
+URL:
+
+```text
+/admin/approvals
+```
+
+Purpose:
+
+- Send content items for approval
+- Track approval decisions
+- Review client feedback
+
+Admin/team workflow:
+
+1. Create content item
+2. Make sure the content is ready for client review
+3. Open `/admin/approvals`
+4. Select content item
+5. Send for approval
+
+Client workflow:
+
+1. Client logs in
+2. Opens `/client/dashboard`
+3. Reviews pending approvals
+4. Clicks approve or enters revision feedback
+
+## 13. Publishing Workflow
+
+Available on:
+
+```text
+/admin/content/[id]
+```
+
+Purpose:
+
+- Schedule approved content
+- Trigger publishing reminder automation
+- Mark content as published after manual publishing
+
+Scheduling content:
+
+1. Open content detail page
+2. Set schedule date/time
+3. Click schedule
+4. Content status becomes `SCHEDULED`
+5. Backend emits `content-scheduled`
+6. n8n can create a Google Calendar reminder
+
+Publishing content:
+
+1. Publish manually on the target platform
+2. Return to content detail page
+3. Click mark published
+4. Content status becomes `PUBLISHED`
+
+## 14. Analytics
+
+URL:
+
+```text
+/admin/analytics
+```
+
+Purpose:
+
+- Store manual performance metrics for published content
+- View totals
+- Prepare data for reports
+
+Metrics include:
+
+- Reach
+- Impressions
+- Engagement
+- Clicks
+- Likes
+- Comments
+- Shares
+- Saves
+- Followers gained
+
+Recommended workflow:
+
+1. Mark content as published
+2. Wait for platform metrics
+3. Open `/admin/analytics`
+4. Select published content
+5. Add metrics
+6. Use results in reports
+
+## 15. Reports
+
+URL:
+
+```text
+/admin/reports
+```
+
+Purpose:
+
+- Create client-linked report records
+- Store summaries and Drive links
+- Keep reporting history organized
+
+Report fields:
+
+- Client
+- Title
+- Period start
+- Period end
+- Summary
+- Drive URL
+
+Client users can view their reports from:
+
+```text
+/client/dashboard
+```
+
+## 16. Assets
+
+URL:
+
+```text
+/admin/assets
+```
+
+Purpose:
+
+- Track production files and Drive links
+- Link assets to clients
+- Optionally link assets to content items
+- Track version and tags
+
+Asset fields:
+
+- Client
+- Optional content item
+- Name
+- Asset type
+- Drive URL
+- Version
+- Tags
+
+Examples:
+
+- Logo files
+- Brand guide
+- Reel draft
+- Graphic draft
+- Final published file
+- Monthly report file
+
+## 17. n8n Automation
+
+n8n is used for external automation after the backend emits events.
+
+Current event types:
+
+```text
+client-created
+lead-created
+content-scheduled
+```
+
+### Test URLs vs Production URLs
+
+Test URL:
+
+```text
+/webhook-test/...
+```
+
+Use for manual testing. You must click:
+
+```text
+Listen for test event
+```
+
+Production URL:
+
+```text
+/webhook/...
+```
+
+Use for automatic live execution. The workflow must be active/published.
+
+### Production Automation Rules
+
+For automation to run automatically:
+
+1. Activate the n8n workflow
+2. Use the Production URL
+3. Put the Production URL in `pxl-api/.env`
+4. Restart the API
+5. Trigger the event from the portal
+
+Example:
+
+```env
+N8N_CLIENT_CREATED_WEBHOOK_URL=https://your-n8n-host/webhook/client-created
+N8N_LEAD_CREATED_WEBHOOK_URL=https://your-n8n-host/webhook/lead-created
+N8N_CONTENT_SCHEDULED_WEBHOOK_URL=https://your-n8n-host/webhook/content-scheduled
+```
+
+### One Workflow vs Separate Workflows
+
+You can use one n8n workflow with multiple webhook trigger nodes:
+
+```text
+/client-created
+/lead-created
+/content-scheduled
+```
+
+This is useful if your n8n plan only allows one active workflow.
+
+Inside one workflow:
+
+- Put each Webhook trigger in its own branch
+- Keep each automation branch separate
+- Use clear node names
+
+## 18. Google Drive Automation
+
+The `client-created` automation can create a standard folder structure.
+
+Recommended folder structure:
+
+```text
+Client Name/
+  01 Brand Assets/
+  02 Monthly Content/
+  03 Reels/
+  04 Graphics/
+  05 Approved/
+  06 Published/
+  07 Reports/
+```
+
+After n8n creates the folder:
+
+1. n8n prepares the Drive folder URL
+2. n8n calls the backend callback endpoint
+3. Backend saves `driveFolderUrl` on the client record
+
+Callback endpoint:
+
+```text
+PATCH /api/clients/:id/drive-folder
+```
+
+Required header:
+
+```text
+x-pxl-automation-secret
+```
+
+The header value must match:
+
+```env
+AUTOMATION_WEBHOOK_SECRET=...
+```
+
+## 19. Google Calendar Automation
+
+The `content-scheduled` automation can create a Google Calendar reminder.
+
+Recommended workflow:
+
+1. Content is approved
+2. Admin schedules content
+3. Backend emits `content-scheduled`
+4. n8n receives event
+5. n8n creates Google Calendar event
+6. Automation log becomes `SUCCEEDED`
+
+## 20. Environment Setup
+
+### API Environment
+
+File:
+
+```text
+pxl-api/.env
+```
+
+Important values:
+
+```env
+DATABASE_URL=
+JWT_SECRET=
+PORT=4000
+FRONTEND_URL=http://localhost:3000
+N8N_CLIENT_CREATED_WEBHOOK_URL=
+N8N_LEAD_CREATED_WEBHOOK_URL=
+N8N_CONTENT_SCHEDULED_WEBHOOK_URL=
+AUTOMATION_WEBHOOK_SECRET=
+AI_PROVIDER=
+AI_API_KEY=
+AI_MODEL=
+```
+
+After changing `.env`, restart the API.
+
+### Portal Environment
+
+File:
+
+```text
+pxl-portal/.env
+```
+
+Important value:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+After changing `.env`, restart the portal.
+
+## 21. Local Commands
+
+### Backend
+
+Folder:
+
+```text
+pxl-api
+```
+
+Commands:
+
+```bash
+pnpm run db:migrate
+pnpm run seed:admin
+pnpm run start
+pnpm run typecheck
+pnpm run lint
+pnpm run build
+```
+
+### Portal
+
+Folder:
+
+```text
+pxl-portal
+```
+
+Commands:
+
+```bash
+pnpm run dev
+pnpm run typecheck
+pnpm run lint
+pnpm run build
+```
+
+## 22. Full Manual QA Flow
+
+Use this checklist to test the full MVP.
+
+### Public Lead Flow
+
+- Open `/`
+- Open `/funnel`
+- Click inquiry CTA
+- Submit `/lead-form`
+- Log in as admin
+- Open `/admin/leads`
+- Confirm lead appears
+- Update lead status
+- Convert lead to client
+
+### Client Onboarding Flow
+
+- Open `/onboarding`
+- Submit client details
+- Open `/admin/clients`
+- Confirm client appears with `ONBOARDING` status
+- Confirm automation log appears
+- If n8n is active, confirm Drive folder is created
+- Confirm Drive URL is saved on client detail page
+
+### User Account Flow
+
+- Log in as admin
+- Open `/admin/users`
+- Create a `CLIENT` user
+- Use the exact same email as the client record
+- Log out
+- Log in as client
+- Confirm redirect to `/client/dashboard`
+
+### Content Flow
+
+- Log in as admin/team
+- Open `/admin/content`
+- Create content item
+- Open content detail page
+- Use AI assistant
+- Save caption or hashtags
+- Update content status
+
+### Approval Flow
+
+- Open `/admin/approvals`
+- Send content for approval
+- Log in as client
+- Open `/client/dashboard`
+- Approve content or request revision
+- Log back in as admin/team
+- Confirm approval and content statuses updated
+
+### Publishing Flow
+
+- Open approved content detail page
+- Schedule content
+- Confirm status becomes `SCHEDULED`
+- Confirm `content-scheduled` automation log
+- If n8n is active, confirm Google Calendar event
+- Mark content published
+- Confirm status becomes `PUBLISHED`
+
+### Analytics and Reports Flow
+
+- Open `/admin/analytics`
+- Add metrics for published content
+- Open `/admin/reports`
+- Create report for client
+- Log in as client
+- Confirm report appears in client dashboard
+
+### Assets Flow
+
+- Open `/admin/assets`
+- Add asset with Drive URL
+- Link it to client
+- Optionally link it to content item
+- Log in as client
+- Confirm asset appears in client dashboard
+
+## 23. Common Problems
+
+### Client Can Log In But Dashboard Has No Workspace
+
+Cause:
+
+- Client user email does not match the client record email
+
+Fix:
+
+- Update the client record email or create a client user with the matching email
+
+### n8n Webhook Says Not Registered
+
+Cause:
+
+- Using Production URL while workflow is not active
+- Using wrong webhook path
+
+Fix:
+
+- Activate workflow
+- Use `/webhook/...` for production
+- Use `/webhook-test/...` only for test mode
+
+### n8n Test URL Does Not Run Automatically
+
+Cause:
+
+- Test URLs require manual listening
+
+Fix:
+
+- Click `Listen for test event`, or switch to Production URL and activate workflow
+
+### Automation Callback Fails Unauthorized
+
+Cause:
+
+- `x-pxl-automation-secret` does not match `AUTOMATION_WEBHOOK_SECRET`
+
+Fix:
+
+- Use the same value in API `.env` and n8n
+- Restart API after changing `.env`
+
+### Automation Callback Cannot Connect
+
+Cause:
+
+- Wrong tunnel URL
+- Double `https://`
+- Tunnel stopped
+- Backend not running
+
+Fix:
+
+- Confirm callback URL format:
+
+```text
+https://your-tunnel.trycloudflare.com/api/clients/:id/drive-folder
+```
+
+- Confirm backend is running on port `4000`
+- Restart Cloudflare tunnel if needed
+
+### API Returns 400 Property Should Not Exist
+
+Cause:
+
+- Frontend or n8n sent a field not allowed by the DTO
+
+Fix:
+
+- Remove extra field from request body
+- Check backend error details
+
+## 24. Recommended Production Checklist
+
+Before production:
+
+- Use production n8n URLs
+- Activate n8n workflow
+- Use strong `JWT_SECRET`
+- Use strong `AUTOMATION_WEBHOOK_SECRET`
+- Confirm `DATABASE_URL`
+- Confirm `NEXT_PUBLIC_API_URL`
+- Confirm CORS frontend URL
+- Create admin account
+- Create test team account
+- Create test client account
+- Run full QA flow
+- Confirm deployment logs
+- Confirm automation logs
+- Confirm client portal restrictions
+
+## 25. MVP Limitations
+
+Current MVP still expects humans to:
+
+- Finalize content strategy
+- Edit AI drafts
+- Publish content manually to social platforms
+- Enter analytics manually
+- Prepare final client report files
+- Manage final client communication
+
+Future improvements may include:
+
+- Slack or Discord notifications
+- Trello card creation
+- Social platform integrations
+- Automated metric imports
+- Email notifications
+- More advanced client portal pages
+- Report PDF generation
+- Stronger production monitoring
+
+<!-- USER_MANUAL_END -->
