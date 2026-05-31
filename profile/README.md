@@ -184,9 +184,17 @@ flowchart TD
 | `pxl-n8n-workflows` | Importable workflow automations | n8n workflow JSON |
 | `docs` | Planning, standards, architecture, and workflow documentation | Markdown |
 
-## User Manual
+## Project Guides
 
-For the full operating guide, see [docs/user-manual.md](docs/user-manual.md).
+This README includes two clearly separated guide sections near the bottom:
+
+- **Complete User Manual**: full project guide for setup, roles, workflows, automations, testing, and troubleshooting.
+- **How To Use PXL Automation**: practical day-to-day instructions for public visitors, admins, team members, and clients.
+
+Standalone copies are also available here:
+
+- [docs/user-manual.md](docs/user-manual.md)
+- [docs/how-to-use.md](docs/how-to-use.md)
 
 ## System Architecture
 
@@ -837,6 +845,12 @@ Still required before a working MVP:
 ## Strategic Direction
 
 PXL Automation should remain a centralized operations layer. The system should help the team move faster, reduce duplicated work, standardize delivery, and make reporting easier while keeping strategy, taste, client judgment, and creative quality in human hands.
+
+---
+
+# Complete Project User Manual
+
+The section below is the full operating manual for the whole PXL Automation project.
 
 <!-- USER_MANUAL_START -->
 
@@ -1816,3 +1830,529 @@ Future improvements may include:
 - Stronger production monitoring
 
 <!-- USER_MANUAL_END -->
+
+---
+
+# User How-To Guide
+
+The section below is the practical usage guide for public visitors, admins, team members, and clients.
+
+<!-- HOW_TO_USE_START -->
+
+## How To Use PXL Automation
+
+This guide is for people using the system day to day. It explains what to click, what to fill in, and what each type of user should do.
+
+## 1. Public Visitors
+
+Public visitors do not need an account.
+
+### View the Website
+
+Open:
+
+```text
+/
+```
+
+Use this page to understand what PXL Digital Marketing offers.
+
+### View the Funnel Page
+
+Open:
+
+```text
+/funnel
+```
+
+Use this page if you want a clearer explanation of how the inquiry process works.
+
+### Send an Inquiry
+
+Open:
+
+```text
+/lead-form
+```
+
+Fill in:
+
+- Business name
+- Contact person
+- Email
+- Phone
+- Source
+- Message
+
+Click submit.
+
+After submitting, the PXL team can review your inquiry from the admin portal.
+
+### Submit Onboarding Details
+
+Open:
+
+```text
+/onboarding
+```
+
+Use this after you are ready to give PXL your business details.
+
+Fill in:
+
+- Business name
+- Industry
+- Contact person
+- Email
+- Phone
+- Social links
+- Website
+- Services needed
+- Goals
+- Brand notes
+
+Click submit.
+
+Your details will be saved as a client profile for the PXL team to review.
+
+## 2. Admin Users
+
+Admins manage the whole system.
+
+### Log In
+
+Open:
+
+```text
+/login
+```
+
+Enter your admin email and password.
+
+After login, you should be sent to:
+
+```text
+/admin/dashboard
+```
+
+### Check the Dashboard
+
+Open:
+
+```text
+/admin/dashboard
+```
+
+Use this page to see:
+
+- Active clients
+- Onboarding clients
+- Paused clients
+- Content in production
+- Pending approvals
+- Recent automation logs
+
+If an automation fails, check the automation logs first.
+
+### Create User Accounts
+
+Open:
+
+```text
+/admin/users
+```
+
+Use this page to create:
+
+- Admin accounts
+- Team accounts
+- Client accounts
+
+For client accounts, make sure the email matches the client record email exactly.
+
+Example:
+
+If the client profile email is:
+
+```text
+client@example.com
+```
+
+The client login account must also use:
+
+```text
+client@example.com
+```
+
+### Manage Leads
+
+Open:
+
+```text
+/admin/leads
+```
+
+Use this page to:
+
+- Review new inquiries
+- Update lead status
+- Convert qualified leads into clients
+
+Recommended flow:
+
+1. Review new lead
+2. Contact the lead
+3. Mark as `CONTACTED`
+4. If qualified, mark as `QUALIFIED`
+5. If won, convert to client
+
+### Manage Clients
+
+Open:
+
+```text
+/admin/clients
+```
+
+Use this page to:
+
+- View all clients
+- Create clients manually
+- Open client details
+- Update client information
+- Change client status
+- Review Drive folder links
+
+Recommended client statuses:
+
+- Use `ONBOARDING` for new clients
+- Use `ACTIVE` for active accounts
+- Use `PAUSED` if work is temporarily paused
+- Use `ARCHIVED` for inactive accounts
+
+### Create Content
+
+Open:
+
+```text
+/admin/content
+```
+
+Use this page to create content items for clients.
+
+Fill in:
+
+- Client
+- Title
+- Content type
+- Platform
+- Status
+- Caption
+- Hashtags
+
+Open a content item to edit it in detail.
+
+### Use the AI Assistant
+
+Open a content item:
+
+```text
+/admin/content/[id]
+```
+
+Use the AI assistant to generate:
+
+- Captions
+- Hashtags
+- Reel scripts
+- Creative briefs
+
+Review everything before saving or using it. AI output is only a draft.
+
+### Send Content for Approval
+
+Open:
+
+```text
+/admin/approvals
+```
+
+Choose a content item and send it for approval.
+
+After sending:
+
+- The approval appears in the client portal
+- The client can approve or request revisions
+
+### Schedule Publishing
+
+Open the content detail page:
+
+```text
+/admin/content/[id]
+```
+
+Use the publishing section to:
+
+- Set schedule date and time
+- Trigger publishing reminder automation
+- Mark content as published after manual publishing
+
+### Add Analytics
+
+Open:
+
+```text
+/admin/analytics
+```
+
+Use this page after content is published.
+
+Add:
+
+- Reach
+- Impressions
+- Engagement
+- Clicks
+- Likes
+- Comments
+- Shares
+- Saves
+- Followers gained
+
+### Create Reports
+
+Open:
+
+```text
+/admin/reports
+```
+
+Use this page to create client report records.
+
+Fill in:
+
+- Client
+- Report title
+- Period start
+- Period end
+- Summary
+- Drive URL
+
+Clients can view reports in their client dashboard.
+
+### Add Assets
+
+Open:
+
+```text
+/admin/assets
+```
+
+Use this page to save Drive links for files.
+
+Examples:
+
+- Logos
+- Brand guides
+- Graphics
+- Reels
+- Reports
+- Final approved assets
+
+## 3. Team Users
+
+Team users use most admin workflow screens, but they cannot create user accounts.
+
+### Log In
+
+Open:
+
+```text
+/login
+```
+
+After login, team users go to:
+
+```text
+/admin/dashboard
+```
+
+### Daily Team Workflow
+
+Recommended team workflow:
+
+1. Check `/admin/dashboard`
+2. Review clients in `/admin/clients`
+3. Create or update content in `/admin/content`
+4. Use AI drafts if helpful
+5. Send ready content for approval in `/admin/approvals`
+6. Review approval feedback
+7. Schedule approved content
+8. Mark content as published
+9. Add analytics
+10. Prepare reports
+
+## 4. Client Users
+
+Client users only see their own workspace.
+
+### Log In
+
+Open:
+
+```text
+/login
+```
+
+Enter the email and password provided by PXL.
+
+After login, you should be sent to:
+
+```text
+/client/dashboard
+```
+
+If the dashboard says no workspace is linked, contact PXL. Your login email may not match your client profile email.
+
+### View Your Dashboard
+
+Open:
+
+```text
+/client/dashboard
+```
+
+You can see:
+
+- Account status
+- Business details
+- Drive folder link
+- Content items
+- Approval requests
+- Assets
+- Reports
+
+### Approve Content
+
+In the approvals section:
+
+1. Review the content title, platform, caption, and status
+2. Click approve if everything is good
+3. The PXL team will see the approval
+
+### Request Revisions
+
+If something needs changes:
+
+1. Type your revision note
+2. Click request revision
+3. Be specific about what needs to change
+
+Good feedback examples:
+
+- “Please make the tone more casual.”
+- “Change the CTA to focus on bookings.”
+- “Use the second product photo instead.”
+- “Remove the discount mention.”
+
+### View Assets
+
+Assets are Drive links shared by the PXL team.
+
+Use this section to access:
+
+- Brand files
+- Content files
+- Reports
+- Approved graphics
+- Other shared materials
+
+### View Reports
+
+Reports show campaign or monthly performance summaries.
+
+Open report links to view the full file if a Drive URL is included.
+
+## 5. Recommended End-To-End Workflow
+
+This is the normal full flow:
+
+1. Visitor submits inquiry
+2. Admin reviews lead
+3. Admin converts lead to client
+4. Client submits onboarding details
+5. n8n creates client Drive folder
+6. Admin creates client login account
+7. Team creates content
+8. Team uses AI drafts if needed
+9. Team sends content for approval
+10. Client approves or requests revision
+11. Team schedules approved content
+12. n8n creates publishing reminder
+13. Team publishes manually
+14. Team marks content as published
+15. Team enters analytics
+16. Team creates report
+17. Client views report
+
+## 6. Quick Troubleshooting
+
+### I Cannot Log In
+
+Check:
+
+- Email is correct
+- Password is correct
+- API is running
+- Account was created by an admin
+
+### Client Dashboard Shows No Workspace
+
+Cause:
+
+- Client user email does not match the client profile email
+
+Fix:
+
+- Ask an admin to check the client email and user email
+
+### Automation Did Not Run
+
+Check:
+
+- n8n workflow is active
+- Production webhook URL is used
+- API `.env` has the correct webhook URL
+- API was restarted after `.env` changes
+- Automation log in dashboard
+
+### Google Drive Folder Was Not Saved
+
+Check:
+
+- n8n Drive workflow succeeded
+- Callback URL is correct
+- `AUTOMATION_WEBHOOK_SECRET` matches the n8n header
+- Backend is reachable from n8n
+
+### Approval Is Not Showing for Client
+
+Check:
+
+- Content was sent for approval
+- Client account email matches the client record
+- Approval belongs to the correct client
+
+## 7. Important Rules
+
+- Do not publish AI output without human review
+- Do not share admin accounts with clients
+- Client accounts must use `CLIENT` role
+- Client login email must match client profile email
+- Use production n8n URLs for automatic automation
+- Use test n8n URLs only when manually testing
+- Restart the API after changing backend `.env`
+- Restart the portal after changing frontend `.env`
+
+<!-- HOW_TO_USE_END -->
