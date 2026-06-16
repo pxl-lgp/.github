@@ -22,8 +22,12 @@ The system helps with:
 - Revision tracking
 - Publishing reminders
 - Analytics tracking
+- AI performance insights and recommendations
 - Report preparation
 - File organization
+- Searchable content and asset archives
+- In-portal Google Drive file browsing and uploads
+- Automated approval and lead follow-up reminders
 - Team notifications
 - AI-assisted operations
 
@@ -45,8 +49,8 @@ This platform does not replace the marketing team. It removes repetitive operati
 | Database | The official filing cabinet for all important records |
 | API | The controlled way the portal talks to the backend |
 | AI | A drafting assistant for captions, briefs, scripts, hashtags, and summaries |
-| n8n | The automation runner that handles repeated tasks |
-| Webhook | A signal sent when something important happens |
+| Automation | Built-in background tasks the backend runs after events |
+| Automation log | A record written when an automated step happens |
 | Role-based access | Different users see different things based on their role |
 | Asset | A file such as a logo, graphic, video, reel, report, or brand document |
 | Source of truth | The official place where correct data is stored |
@@ -107,15 +111,15 @@ Each section below explains one part of the agency workflow in plain language an
 
 13. **Recommended System Architecture**
     - Defines the main technical structure: frontend portal, backend API, database, AI layer, and automation engine.
-    - In the system, this maps to `pxl-portal`, `pxl-api`, Neon PostgreSQL, Groq/OpenAI-compatible AI, and n8n.
+    - In the system, this maps to `pxl-portal`, `pxl-api`, Neon PostgreSQL, Groq/OpenAI-compatible AI, and in-process automation.
 
 14. **Automation Roadmap**
     - Organizes automation into quick wins, content automation, and more advanced AI phases.
-    - In the system, this connects to n8n workflows, AI services, automation logs, and future automation improvements.
+    - In the system, this connects to in-process automation, AI services, automation logs, and future automation improvements.
 
 15. **Recommended Tech Stack**
     - Defines the tools used to build and host the platform.
-    - In the system, this includes Next.js, NestJS, TypeScript, Drizzle ORM, Neon PostgreSQL, n8n, Groq, Vercel, and Railway/Render.
+    - In the system, this includes Next.js, NestJS, TypeScript, Drizzle ORM, Neon PostgreSQL, Groq, Vercel, and Railway/Render.
 
 16. **Database Structure**
     - Defines the tables needed to store clients, content, analytics, assets, users, approvals, leads, reports, and automation logs.
@@ -181,7 +185,7 @@ flowchart TD
 | --- | --- | --- |
 | `pxl-api` | Backend API, database access, business rules, AI calls, automation events | NestJS, TypeScript, Drizzle ORM, Neon PostgreSQL, JWT |
 | `pxl-portal` | Admin portal, client portal, public onboarding form, public lead form | Next.js, TypeScript, Tailwind CSS, React Query, Axios, Zustand |
-| `pxl-n8n-workflows` | Importable workflow automations | n8n workflow JSON |
+| `pxl-n8n-workflows` | Deprecated. Archived n8n workflow JSON, kept for reference — automation now runs in `pxl-api` | n8n workflow JSON (archived) |
 | `docs` | Planning, standards, architecture, and workflow documentation | Markdown |
 
 ## Project Guides
@@ -204,8 +208,8 @@ Plain-English version:
 - The portal asks the backend to save or load information.
 - The backend checks the rules and talks to the database.
 - The database is the official record.
-- When something important happens, the backend triggers n8n.
-- n8n creates folders, sends reminders, and notifies the team.
+- When something important happens, the backend runs the automation itself.
+- The backend creates Drive folders, sends calendar reminders, emails the team, and auto-publishes approved content.
 - AI is only called from the backend, never from the frontend.
 
 Tools used in this architecture:
@@ -213,12 +217,11 @@ Tools used in this architecture:
 - Frontend: Next.js, Tailwind CSS, React Query, Axios, Zustand, Vercel Hobby
 - Backend: NestJS, TypeScript, Drizzle ORM, JWT, Render Free
 - Database: Neon PostgreSQL Free
-- Automation: n8n self-hosted, GitHub Actions
+- Automation: in-process inside `pxl-api` (NestJS cron + services), GitHub Actions for CI
 - AI: Groq free/prototype access, optional Ollama local AI
-- Files: Google Drive Free
-- Notifications: Slack Free, Discord Free
-- Scheduling: Google Calendar Free
-- Project mirroring: Trello Free
+- Files: Google Drive (called directly by the API)
+- Notifications: SMTP email
+- Scheduling: Google Calendar (called directly by the API)
 - Diagrams/docs: Eraser.io Free, GitHub Markdown, Google Docs
 
 ```mermaid
@@ -231,20 +234,17 @@ flowchart TB
   API --> DB["Neon PostgreSQL Free<br/>Single Source of Truth"]
 
   API --> AI["AI Layer<br/>Groq for prototype/free access<br/>Optional Ollama for local free AI"]
-  API --> Automation["Automation Module<br/>Backend event emitter"]
+  API --> Automation["In-Process Automation<br/>NestJS cron + services"]
   Automation --> Logs["automation_logs"]
-  Automation --> N8N["n8n Self-Hosted<br/>Business Workflow Automation"]
-  API --> GHA["GitHub Actions Free<br/>Code checks, builds,<br/>workflow JSON validation"]
+  API --> GHA["GitHub Actions Free<br/>Code checks, builds"]
 
-  N8N --> Drive["Google Drive Free<br/>File Storage Only"]
-  N8N --> Calendar["Google Calendar Free<br/>Reminders Only"]
-  N8N --> Slack["Slack Free<br/>Notifications Only"]
-  N8N --> Discord["Discord Free<br/>Notifications Only"]
-  N8N --> Trello["Trello Free<br/>Task/Card Mirroring Only"]
-  N8N --> Social["Native Social Tools<br/>Meta Business Suite, TikTok Studio,<br/>YouTube Studio, LinkedIn Scheduler"]
+  Automation --> Drive["Google Drive<br/>Client workspace folders"]
+  Automation --> Calendar["Google Calendar<br/>Publishing reminders"]
+  Automation --> Email["SMTP Email<br/>Team notifications"]
+  Automation --> Meta["Meta Graph API<br/>Auto-publish approved content"]
 
   Drive --> API
-  Social --> API
+  Meta --> API
 ```
 
 ## Free Tools By Workflow
@@ -256,10 +256,10 @@ flowchart TB
 | Backend API | NestJS, TypeScript, Drizzle ORM, JWT, Render Free |
 | Database | Neon PostgreSQL Free |
 | Code automation | GitHub Actions Free |
-| Business automation | n8n self-hosted |
+| Business automation | In-process inside `pxl-api` (NestJS cron + services) |
 | AI assistance | Groq prototype/free access, optional Ollama local AI |
-| Client onboarding | PXL Portal, n8n, Google Drive Free, Trello Free, Discord Free |
-| Lead generation | PXL Portal, n8n, Slack Free, Google Calendar Free |
+| Client onboarding | PXL Portal, in-process automation, Google Drive |
+| Lead generation | PXL Portal, in-process automation, SMTP email, Google Calendar |
 | Content production | Google Drive Free, Trello Free, Canva Free, CapCut Free, DaVinci Resolve Free |
 | Publishing | Google Calendar Free, Meta Business Suite, TikTok Studio, YouTube Studio, LinkedIn native scheduler |
 | Analytics | Native platform analytics, Google Sheets Free, PXL analytics dashboard |
@@ -271,7 +271,7 @@ flowchart TB
 - The backend owns all business logic.
 - The frontend only displays screens and sends API requests.
 - AI keys are never exposed to the frontend.
-- n8n only reacts to backend-triggered events.
+- All automation runs in-process in the backend; there is no external workflow tool.
 - Google Drive stores files only.
 - Slack and Discord are for notifications only.
 - Google Calendar is for scheduling and reminders only.
@@ -417,14 +417,14 @@ Plain-English version:
 
 - The backend notices that something important happened.
 - The backend records the event.
-- The backend sends the event to n8n.
-- n8n performs the repetitive external actions.
+- The backend runs the automation in-process.
+- The backend performs the actions directly (Drive, Calendar, email, publishing).
 
 ```mermaid
 flowchart LR
-  A["Backend business event"] --> B["Automation Module"]
+  A["Backend business event"] --> B["In-process automation"]
   B --> C["automation_logs table"]
-  B --> D["n8n webhook"]
+  B --> D["Event handlers"]
 
   D --> E{"Event type"}
   E --> F["client-created"]
@@ -434,8 +434,8 @@ flowchart LR
   E --> J["report-created"]
 
   F --> K["Create Google Drive folders"]
-  F --> L["Create Trello card"]
-  F --> M["Notify team in Discord"]
+  F --> L["Create standard subfolders"]
+  F --> M["Notify team by email"]
 
   G --> N["Notify client/team"]
   G --> O["Create publishing reminder"]
@@ -497,6 +497,11 @@ The backend is the system behind the scenes. It handles rules, permissions, data
 - `ai`
 - `notifications`
 - `calendar`
+- `onboarding-tasks`
+- `content-pillars`
+- `content-templates`
+- `assistant`
+- `scheduler` (auto-publish, reminders, Meta insights ingestion)
 - `integrations`
 
 ### Core API Areas
@@ -511,12 +516,24 @@ The backend is the system behind the scenes. It handles rules, permissions, data
 - `/leads`
 - `/analytics`
 - `/reports`
-- `/automation/*`
+- `/automation/*` (logs, `?status=FAILED` filter, and `POST /automation/logs/:id/retry`)
+- `/onboarding-tasks`
+- `/content-pillars`
+- `/content-templates`
+- `/analytics/best-times`
+- `POST /assets/:id/auto-tag`
+- `POST /assistant/chat` (public intake chatbot)
 - `/ai/generate-caption`
-- `/ai/generate-brief`
-- `/ai/generate-reel-script`
-- `/ai/generate-report-summary`
 - `/ai/generate-hashtags`
+- `/ai/generate-reel-script`
+- `/ai/generate-brief`
+- `/ai/generate-broll`
+- `/ai/generate-overlay`
+- `/ai/generate-tags`
+- `/ai/generate-template`
+- `/ai/analyze-performance`
+
+> AI generation endpoints accept `language` (`EN` | `TAGLISH`) and `seo` (boolean) options.
 
 ## Frontend: `pxl-portal`
 
@@ -564,8 +581,13 @@ The database is the official record of the business workflow. If information nee
 - `analytics`
 - `reports`
 - `automation_logs`
-- `notifications`
-- `calendar_events`
+- `onboarding_tasks`
+- `content_pillars`
+- `content_templates`
+- `social_connections`
+- `meta_authorizations`
+
+`leads` carries a heuristic `score` / `score_band` (COLD/WARM/HOT) computed on intake.
 
 ### Content Lifecycle
 
@@ -585,26 +607,61 @@ stateDiagram-v2
   REPORTED --> IDEA: Insights feed next cycle
 ```
 
-## Automation: `pxl-n8n-workflows`
+## Automation: built-in (in-process)
 
-n8n handles repeated operational tasks after the backend triggers an event.
+The backend handles repeated operational tasks in-process, immediately after a business event. (`pxl-n8n-workflows` is archived for reference only.)
 
 ### Automation Events
 
+Every event below is written to the `automation_logs` table and visible at `GET /api/automation/logs`:
+
 - `client-created`
-- `content-ready`
-- `approval-updated`
+- `drive-folder-provisioned`
 - `lead-created`
-- `report-created`
-- `monthly-report-schedule`
+- `content-scheduled`
+- `content-calendar-reminder`
+- `content-auto-published`
+- `content-auto-publish-failed`
+- `content-auto-publish-abandoned`
+- `approval-reminder`
+- `lead-follow-up-reminder`
+- `analytics-ingested`
 
 ### Automation Examples
 
-- Client onboarding creates Google Drive folders, Trello cards, and Discord notifications.
-- Content ready events notify the team/client and prepare publishing reminders.
-- Approval updates notify the team when content is approved or needs revision.
-- Lead creation notifies sales and creates a follow-up reminder.
-- Report creation notifies the team/client that reports are ready.
+- Client onboarding (or lead conversion) creates the Google Drive folder with standard subfolders, seeds the onboarding checklist, and emails the team.
+- Scheduling approved content creates a Google Calendar reminder and auto-publishes it to Meta at its scheduled time.
+- Pending approvals older than 24 hours trigger a team reminder (re-flagged at most once per day).
+- Leads left as `NEW` for over 24 hours trigger a follow-up reminder to the team.
+- A permanently failing auto-publish stops after 3 attempts and is logged as `content-auto-publish-abandoned`.
+- Published content's Meta insights are pulled hourly into the `analytics` table (`analytics-ingested`), keeping performance dashboards current without manual entry.
+- Any `FAILED` automation (Drive provisioning, calendar reminder) can be re-run from the logs via `POST /api/automation/logs/:id/retry`.
+
+### Recent Capability Upgrades (mapped to the workflow study)
+
+| Capability | Workflow study area |
+| --- | --- |
+| Searchable, filterable content & asset archives | #5 Content Production, #12 File Management |
+| AI performance insights & recommendations (`POST /api/ai/analyze-performance`) | #10 Analytics |
+| Automated approval reminders & lead follow-up | #8 Approval, #11 Lead Generation |
+| Production hardening — CI, tests, container images, request logging, Dependabot | #13 Recommended System Architecture |
+| Onboarding checklist auto-seeded per client (`/api/onboarding-tasks`) | #3 Client Onboarding |
+| Content pillars with monthly cadence (`/api/content-pillars`) | #4 Content Strategy |
+| Reusable content templates + AI `generate-template` (`/api/content-templates`) | #5 Content Production |
+| AI B-roll & overlay/auto-caption suggestions (`/api/ai/generate-broll`, `/generate-overlay`) | #6 Reels & Video |
+| Taglish + SEO caption modes (`language`, `seo` options on AI endpoints) | #7 Caption Generation |
+| Best-time-to-post from engagement history (`/api/analytics/best-times`) | #9 Publishing |
+| Automated Meta insights ingestion into the analytics table | #10 Analytics |
+| Heuristic lead scoring (COLD/WARM/HOT) + public intake chatbot (`/api/assistant/chat`) | #11 Lead Generation |
+| AI asset auto-tagging (`POST /api/assets/:id/auto-tag`) | #12 File Management |
+| Retry for failed automations (`POST /api/automation/logs/:id/retry`) | #14 Automation Roadmap |
+
+> Meta insights ingestion uses best-effort Graph metric mapping that should be validated
+> against the live API version; video auto-captioning/clipping (#6) and cross-platform
+> publishing beyond Meta (#9) remain future work.
+
+These keep the platform aligned with the study's Strategic Direction: automate repetitive
+operational work while leaving creativity, strategy, and final decisions to people.
 
 ## Google Drive Folder Structure
 
@@ -636,8 +693,8 @@ PXL Clients/
 2. The backend saves the lead and triggers sales notifications.
 3. A qualified lead becomes a client.
 4. The client submits onboarding information.
-5. The backend saves the client and triggers n8n.
-6. n8n creates Google Drive folders, Trello cards, and notifications.
+5. The backend saves the client and runs its automation.
+6. The backend creates the Google Drive folders and emails the team.
 7. The team creates content strategy and content items.
 8. AI assists with briefs, captions, hashtags, and reel scripts.
 9. The team reviews and sends content for client approval.
@@ -657,7 +714,7 @@ The foundation now includes:
 - Root workspace structure
 - `pxl-api` backend placeholder
 - `pxl-portal` frontend placeholder
-- `pxl-n8n-workflows` automation placeholder
+- `pxl-n8n-workflows` archived (automation now runs in `pxl-api`)
 - `docs` planning and standards folder
 - Environment variable examples
 - Root `.gitignore`
@@ -708,12 +765,12 @@ The Phase 4 portal scaffold now includes:
 
 The Phase 5 automation scaffold now includes:
 
-- Backend automation delivery service
-- n8n webhook delivery for configured events
+- Backend automation service
+- In-process event handling for configured events
 - Automation log status updates
 - Protected `GET /api/automation/logs`
 - Dashboard automation log table
-- Importable `client-created` n8n workflow JSON
+- In-process `client-created` automation (Drive folder provisioning)
 
 The Phase 6 content workflow scaffold now includes:
 
@@ -750,7 +807,7 @@ The Phase 9 publishing scaffold now includes:
 - Protected content schedule endpoint
 - Protected content publish endpoint
 - `content-scheduled` automation event
-- Importable `content-scheduled` n8n workflow JSON
+- In-process `content-scheduled` automation (Calendar reminder + auto-publish)
 - Content detail publishing panel
 - Publishing status updates for scheduled and published content
 
@@ -771,7 +828,7 @@ The Phase 11 lead generation scaffold now includes:
 - Lead qualification statuses
 - Lead-to-client conversion
 - `lead-created` automation event
-- Importable `lead-created` n8n workflow
+- In-process `lead-created` automation (team email notification)
 
 The Phase 12 public onboarding scaffold now includes:
 
@@ -791,11 +848,9 @@ The Phase 13 file and asset management scaffold now includes:
 
 The Phase 14 Google Drive automation scaffold now includes:
 
-- Automation callback endpoint for client Drive folder URLs
-- Shared-secret callback protection
-- Updated `client-created` n8n workflow
+- In-process Drive folder provisioning on client create
 - Google Drive client root folder creation
-- Standard PXL subfolder creation
+- Standard PXL subfolder creation (01 Brand Assets … 07 Reports)
 - Automatic saving of `driveFolderUrl` on the client profile
 
 The Phase 15 client portal scaffold now includes:
@@ -812,21 +867,17 @@ The Phase 15 client portal scaffold now includes:
 
 Still required before a working MVP:
 
-- Import and activate the n8n `client-created` workflow
-- Configure `N8N_WEBHOOK_BASE_URL`
-- Configure matching `AUTOMATION_WEBHOOK_SECRET`
-- Smoke test client creation through the full portal to n8n path
+- Configure Google Drive, Google Calendar, Meta, and SMTP credentials in `pxl-api/.env`
+- Smoke test client creation and in-process Drive folder provisioning
 - Smoke test content creation and status updates from the portal
 - Smoke test approval decisions from the portal
 - Smoke test AI draft generation from content detail pages
-- Smoke test content scheduling from the portal to n8n
-- Smoke test marking scheduled content as published
+- Smoke test content scheduling, the Calendar reminder, and auto-publish of approved content
 - Smoke test analytics metric entry for published content
 - Smoke test creating a client report record
-- Smoke test public lead submission and admin conversion
+- Smoke test public lead submission, the team email notification, and admin conversion
 - Smoke test public onboarding submission
 - Smoke test asset creation with a real Drive URL
-- Smoke test n8n Google Drive folder creation from `client-created`
 - Smoke test client portal login with a `CLIENT` user
 - Smoke test admin user creation from `/admin/users`
 - Add tests before production use
@@ -839,12 +890,23 @@ Still required before a working MVP:
 | Frontend | Vercel |
 | Backend | Railway or Render |
 | Database | Neon PostgreSQL |
-| Automation | n8n Cloud or self-hosted n8n |
+| Automation | In-process (runs inside the backend) |
 | Files | Google Drive |
 
 ## Strategic Direction
 
 PXL Automation should remain a centralized operations layer. The system should help the team move faster, reduce duplicated work, standardize delivery, and make reporting easier while keeping strategy, taste, client judgment, and creative quality in human hands.
+
+## Google Drive Workspace
+
+The portal includes a protected Google Drive browser:
+
+- Admin and team users open a client record to browse, upload, create folders, download, or delete files.
+- Client users open `/client/files` to browse, upload, and download files in their own linked folder.
+- Google credentials stay in the NestJS API and are never exposed to the browser.
+- The API verifies that requested items belong to the client's saved Drive root folder.
+
+For personal My Drive accounts, configure OAuth with `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET`, and `GOOGLE_DRIVE_REFRESH_TOKEN`. For Google Workspace Shared Drives, configure `GOOGLE_DRIVE_CLIENT_EMAIL` and `GOOGLE_DRIVE_PRIVATE_KEY`.
 
 ---
 
@@ -873,15 +935,16 @@ PXL Automation is a digital marketing operations system for managing:
 - Reports
 - Asset and Drive link tracking
 - Client portal access
-- n8n automation workflows
+- Built-in automation
 
-The system has three main parts:
+The system has two main parts:
 
 | Area | Purpose |
 | --- | --- |
 | `pxl-portal` | The website and portal people use |
-| `pxl-api` | The backend API, database rules, auth, and automation events |
-| `pxl-n8n-workflows` | Importable n8n workflows for external automation |
+| `pxl-api` | The backend API, database rules, auth, and in-process automation |
+
+(`pxl-n8n-workflows` is archived for reference only; automation now runs inside `pxl-api`.)
 
 ## 2. User Roles
 
@@ -933,7 +996,7 @@ Purpose:
 
 - Captures new business inquiries
 - Creates a lead record in the backend
-- Can trigger the `lead-created` n8n automation
+- Can trigger the `lead-created` automation
 
 Typical fields:
 
@@ -957,7 +1020,7 @@ Purpose:
 - Lets a client submit business information
 - Creates a client record with `ONBOARDING` status
 - Triggers the `client-created` automation path
-- Can create a Google Drive folder through n8n if the workflow is active
+- Triggers in-process creation of the client's Google Drive folder
 
 Typical fields:
 
@@ -1029,7 +1092,7 @@ Dashboard metrics include:
 - Content in production
 - Pending approvals
 
-Automation logs show recent backend-to-n8n events such as:
+Automation logs show recent automation events such as:
 
 - `client-created`
 - `lead-created`
@@ -1039,10 +1102,10 @@ Statuses:
 
 | Status | Meaning |
 | --- | --- |
-| `PENDING` | Event was logged and waiting/delivery started |
-| `SENT` | Event was sent to webhook |
-| `SUCCEEDED` | n8n responded successfully |
-| `FAILED` | n8n or callback failed |
+| `PENDING` | Event was logged |
+| `SENT` | Automation step is in progress |
+| `SUCCEEDED` | Automation step completed |
+| `FAILED` | Automation step failed |
 
 ## 6. Managing Users
 
@@ -1085,8 +1148,17 @@ URL:
 Purpose:
 
 - Review public inquiries
+- Triage by lead score (HOT/WARM/COLD)
 - Update lead status
 - Convert qualified leads into clients
+
+Lead scoring:
+
+Every lead is automatically scored 0-100 on intake and given a band — `HOT`,
+`WARM`, or `COLD` — from signals like a provided phone number, message detail,
+buying-intent keywords, referral source, and a business email domain. The score
+and the reasons behind it are saved on the lead so the team can follow up on the
+hottest leads first.
 
 Lead statuses:
 
@@ -1152,7 +1224,7 @@ You can update:
 - Status
 - Drive folder URL
 
-If Google Drive automation is working, the Drive folder URL is saved automatically after n8n creates the folder.
+If Google Drive automation is working, the Drive folder URL is saved automatically after the API creates the folder.
 
 ## 9. Client Portal
 
@@ -1253,16 +1325,31 @@ Available on:
 
 AI can generate:
 
-- Caption drafts
+- Caption drafts (with a clear CTA)
 - Hashtag suggestions
 - Reel scripts
 - Creative briefs
+- B-roll / supporting shot ideas (for reels)
+- On-screen overlay / auto-caption lines (per scene)
+- Reusable content templates
+- Asset library tags
+
+Language & SEO options:
+
+- **Taglish** — generate captions and content in a natural Tagalog-English mix
+  for a Filipino audience (`language: "TAGLISH"`).
+- **SEO** — optimize captions/templates with a keyword-rich first line and
+  relevant keywords woven in (`seo: true`).
+
+There is also a **public intake assistant** (`POST /api/assistant/chat`) — a
+lead-gen chatbot that answers a visitor's questions about PXL's services and
+nudges them to leave their details.
 
 Important rule:
 
 AI output is a draft only. A human should always review and edit before publishing.
 
-If no AI API key is configured, the backend returns fallback drafts so the workflow can still be tested.
+If no AI API key is configured, the backend returns deterministic fallback drafts so the workflow can still be tested.
 
 ## 12. Approval Workflow
 
@@ -1314,7 +1401,7 @@ Scheduling content:
 3. Click schedule
 4. Content status becomes `SCHEDULED`
 5. Backend emits `content-scheduled`
-6. n8n can create a Google Calendar reminder
+6. The API creates a Google Calendar reminder
 
 Publishing content:
 
@@ -1333,8 +1420,9 @@ URL:
 
 Purpose:
 
-- Store manual performance metrics for published content
-- View totals
+- Store performance metrics for published content (auto-ingested from Meta, with manual entry as a fallback)
+- View totals and AI insights
+- Suggest the best time to post
 - Prepare data for reports
 
 Metrics include:
@@ -1349,14 +1437,24 @@ Metrics include:
 - Saves
 - Followers gained
 
+Automated ingestion:
+
+For content published to connected Meta accounts, an hourly job pulls each post's
+insights from the Graph API into the `analytics` table, so dashboards stay current
+without manual entry. Metrics can still be entered or corrected by hand.
+
+Best time to post:
+
+`GET /api/analytics/best-times` (optionally `?clientId=`) analyzes a client's
+published-content engagement and returns the best weekdays and hours to post,
+plus the top combined slots, once there is enough history.
+
 Recommended workflow:
 
-1. Mark content as published
-2. Wait for platform metrics
-3. Open `/admin/analytics`
-4. Select published content
-5. Add metrics
-6. Use results in reports
+1. Mark content as published (or let the scheduler auto-publish it)
+2. Insights are ingested automatically; add or correct metrics by hand if needed
+3. Open `/admin/analytics` to view totals, AI insights, and best-time suggestions
+4. Use results in reports
 
 ## 15. Reports
 
@@ -1421,81 +1519,35 @@ Examples:
 - Final published file
 - Monthly report file
 
-## 17. n8n Automation
+## 17. Built-In Automation
 
-n8n is used for external automation after the backend emits events.
+All automation runs in-process inside the backend (`pxl-api`). There is no external workflow tool to host, activate, or point webhooks at.
 
-Current event types:
+Automation events recorded in the log:
 
 ```text
 client-created
+drive-folder-provisioned
 lead-created
 content-scheduled
+content-calendar-reminder
+content-auto-published
+content-auto-publish-abandoned
 ```
 
-### Test URLs vs Production URLs
+### How It Runs
 
-Test URL:
+For automation to run, the API just needs to be running with the relevant credentials configured:
 
-```text
-/webhook-test/...
-```
+1. Set the required credentials in `pxl-api/.env` (Google Drive, SMTP, Meta, Google Calendar)
+2. Restart the API after changing `.env`
+3. Trigger the event from the portal (create a client, submit a lead, schedule content)
 
-Use for manual testing. You must click:
-
-```text
-Listen for test event
-```
-
-Production URL:
-
-```text
-/webhook/...
-```
-
-Use for automatic live execution. The workflow must be active/published.
-
-### Production Automation Rules
-
-For automation to run automatically:
-
-1. Activate the n8n workflow
-2. Use the Production URL
-3. Put the Production URL in `pxl-api/.env`
-4. Restart the API
-5. Trigger the event from the portal
-
-Example:
-
-```env
-N8N_CLIENT_CREATED_WEBHOOK_URL=https://your-n8n-host/webhook/client-created
-N8N_LEAD_CREATED_WEBHOOK_URL=https://your-n8n-host/webhook/lead-created
-N8N_CONTENT_SCHEDULED_WEBHOOK_URL=https://your-n8n-host/webhook/content-scheduled
-```
-
-### One Workflow vs Separate Workflows
-
-You can use one n8n workflow with multiple webhook trigger nodes:
-
-```text
-/client-created
-/lead-created
-/content-scheduled
-```
-
-This is useful if your n8n plan only allows one active workflow.
-
-Inside one workflow:
-
-- Put each Webhook trigger in its own branch
-- Keep each automation branch separate
-- Use clear node names
+There are no webhook URLs to manage. Each action runs its automation immediately and records the result in the automation log.
 
 ## 18. Google Drive Automation
 
-The `client-created` automation can create a standard folder structure.
-
-Recommended folder structure:
+When a client is created (or a lead is converted to a client), the API automatically creates the client's Drive folder and the standard subfolders:
 
 ```text
 Client Name/
@@ -1508,42 +1560,24 @@ Client Name/
   07 Reports/
 ```
 
-After n8n creates the folder:
+The flow is entirely in-process:
 
-1. n8n prepares the Drive folder URL
-2. n8n calls the backend callback endpoint
-3. Backend saves `driveFolderUrl` on the client record
+1. The API creates the root folder under `DRIVE_CLIENTS_PARENT_FOLDER_ID`
+2. The API creates the standard subfolders (best-effort)
+3. The API saves `driveFolderUrl` on the client record and logs `drive-folder-provisioned`
 
-Callback endpoint:
-
-```text
-PATCH /api/clients/:id/drive-folder
-```
-
-Required header:
-
-```text
-x-pxl-automation-secret
-```
-
-The header value must match:
-
-```env
-AUTOMATION_WEBHOOK_SECRET=...
-```
+If Drive credentials or the parent folder ID are missing, provisioning is skipped silently and the folder URL can be set manually on the client record.
 
 ## 19. Google Calendar Automation
 
-The `content-scheduled` automation can create a Google Calendar reminder.
-
-Recommended workflow:
+When content is scheduled, the API creates a Google Calendar publishing reminder:
 
 1. Content is approved
 2. Admin schedules content
-3. Backend emits `content-scheduled`
-4. n8n receives event
-5. n8n creates Google Calendar event
-6. Automation log becomes `SUCCEEDED`
+3. The API creates a 30-minute Google Calendar reminder event
+4. The API logs `content-calendar-reminder`
+
+Set `GOOGLE_CALENDAR_ID` to target a specific calendar (defaults to `primary`). The Google credentials used for Drive must also have calendar access. Reminder creation is best-effort and never blocks scheduling. Separately, approved scheduled content is auto-published to Meta at its scheduled time.
 
 ## 20. Environment Setup
 
@@ -1562,10 +1596,10 @@ DATABASE_URL=
 JWT_SECRET=
 PORT=4000
 FRONTEND_URL=http://localhost:3000
-N8N_CLIENT_CREATED_WEBHOOK_URL=
-N8N_LEAD_CREATED_WEBHOOK_URL=
-N8N_CONTENT_SCHEDULED_WEBHOOK_URL=
-AUTOMATION_WEBHOOK_SECRET=
+DRIVE_CLIENTS_PARENT_FOLDER_ID=
+GOOGLE_CALENDAR_ID=
+SMTP_HOST=
+TEAM_NOTIFICATION_EMAIL=
 AI_PROVIDER=
 AI_API_KEY=
 AI_MODEL=
@@ -1650,7 +1684,7 @@ Use this checklist to test the full MVP.
 - Open `/admin/clients`
 - Confirm client appears with `ONBOARDING` status
 - Confirm automation log appears
-- If n8n is active, confirm Drive folder is created
+- If Drive is configured, confirm the Drive folder and subfolders are created
 - Confirm Drive URL is saved on client detail page
 
 ### User Account Flow
@@ -1689,8 +1723,8 @@ Use this checklist to test the full MVP.
 - Schedule content
 - Confirm status becomes `SCHEDULED`
 - Confirm `content-scheduled` automation log
-- If n8n is active, confirm Google Calendar event
-- Mark content published
+- If Calendar is configured, confirm the Google Calendar reminder event
+- Mark content published (or let the API auto-publish approved content at the scheduled time)
 - Confirm status becomes `PUBLISHED`
 
 ### Analytics and Reports Flow
@@ -1723,65 +1757,37 @@ Fix:
 
 - Update the client record email or create a client user with the matching email
 
-### n8n Webhook Says Not Registered
+### Automation Did Not Run
 
 Cause:
 
-- Using Production URL while workflow is not active
-- Using wrong webhook path
+- The API was not running, or was not restarted after an `.env` change
+- The credentials for that action are missing (Google Drive, Google Calendar, SMTP, or Meta)
 
 Fix:
 
-- Activate workflow
-- Use `/webhook/...` for production
-- Use `/webhook-test/...` only for test mode
+- Confirm the API is running and restart it after changing `.env`
+- Add the required credentials to `pxl-api/.env` (see `.env.example`)
+- Check the automation log for the failed event and its error message
 
-### n8n Test URL Does Not Run Automatically
+### Google Drive Folder Was Not Created
 
 Cause:
 
-- Test URLs require manual listening
+- Drive credentials or `DRIVE_CLIENTS_PARENT_FOLDER_ID` are missing
+- The Google account cannot write to the parent folder
 
 Fix:
 
-- Click `Listen for test event`, or switch to Production URL and activate workflow
-
-### Automation Callback Fails Unauthorized
-
-Cause:
-
-- `x-pxl-automation-secret` does not match `AUTOMATION_WEBHOOK_SECRET`
-
-Fix:
-
-- Use the same value in API `.env` and n8n
-- Restart API after changing `.env`
-
-### Automation Callback Cannot Connect
-
-Cause:
-
-- Wrong tunnel URL
-- Double `https://`
-- Tunnel stopped
-- Backend not running
-
-Fix:
-
-- Confirm callback URL format:
-
-```text
-https://your-tunnel.trycloudflare.com/api/clients/:id/drive-folder
-```
-
-- Confirm backend is running on port `4000`
-- Restart Cloudflare tunnel if needed
+- Set Drive credentials and the parent folder ID in `pxl-api/.env`
+- Look for the `drive-folder-provisioned` automation log entry and its error
+- The folder URL can always be set manually on the client record
 
 ### API Returns 400 Property Should Not Exist
 
 Cause:
 
-- Frontend or n8n sent a field not allowed by the DTO
+- The frontend sent a field not allowed by the DTO
 
 Fix:
 
@@ -1792,10 +1798,8 @@ Fix:
 
 Before production:
 
-- Use production n8n URLs
-- Activate n8n workflow
+- Configure Google Drive, Google Calendar, SMTP, and Meta credentials in `pxl-api/.env`
 - Use strong `JWT_SECRET`
-- Use strong `AUTOMATION_WEBHOOK_SECRET`
 - Confirm `DATABASE_URL`
 - Confirm `NEXT_PUBLIC_API_URL`
 - Confirm CORS frontend URL
@@ -2282,16 +2286,16 @@ This is the normal full flow:
 2. Admin reviews lead
 3. Admin converts lead to client
 4. Client submits onboarding details
-5. n8n creates client Drive folder
+5. API creates the client Drive folder and standard subfolders
 6. Admin creates client login account
 7. Team creates content
 8. Team uses AI drafts if needed
 9. Team sends content for approval
 10. Client approves or requests revision
 11. Team schedules approved content
-12. n8n creates publishing reminder
-13. Team publishes manually
-14. Team marks content as published
+12. API creates a Google Calendar publishing reminder
+13. API auto-publishes the approved content at the scheduled time (or the team publishes manually)
+14. Content is marked as published
 15. Team enters analytics
 16. Team creates report
 17. Client views report
@@ -2321,20 +2325,19 @@ Fix:
 
 Check:
 
-- n8n workflow is active
-- Production webhook URL is used
-- API `.env` has the correct webhook URL
+- API is running (automation runs in-process)
 - API was restarted after `.env` changes
+- Required credentials are set (Google Drive, SMTP, Meta) for the relevant action
 - Automation log in dashboard
 
 ### Google Drive Folder Was Not Saved
 
 Check:
 
-- n8n Drive workflow succeeded
-- Callback URL is correct
-- `AUTOMATION_WEBHOOK_SECRET` matches the n8n header
-- Backend is reachable from n8n
+- Google Drive credentials are configured in the API `.env`
+- `DRIVE_CLIENTS_PARENT_FOLDER_ID` is set to a folder the account can write to
+- The `drive-folder-provisioned` automation log entry for any error
+- The folder URL can always be set manually on the client record
 
 ### Approval Is Not Showing for Client
 
@@ -2350,8 +2353,6 @@ Check:
 - Do not share admin accounts with clients
 - Client accounts must use `CLIENT` role
 - Client login email must match client profile email
-- Use production n8n URLs for automatic automation
-- Use test n8n URLs only when manually testing
 - Restart the API after changing backend `.env`
 - Restart the portal after changing frontend `.env`
 
