@@ -23,8 +23,10 @@ The platform removes repetitive operations *around* the team so people can focus
 | --- | --- |
 | Portal (`pxl-portal`) | The website/dashboard people log in to use |
 | Backend / API (`pxl-api`) | The rule keeper behind the scenes that saves data, runs automation, and talks to other tools |
-| Database | The official filing cabinet (Neon PostgreSQL) for all records — the single source of truth |
+| AI Agent (`ai-agent`) | A separate backend that handles Facebook Messenger AI auto-replies and LLM inference |
+| Database | The official filing cabinet (PostgreSQL) for all records — the single source of truth |
 | AI | A drafting assistant for captions, briefs, scripts, hashtags, tags, and performance summaries |
+| Ollama | A self-hosted LLM inference server that runs on the laptop's GPU instead of calling a cloud API |
 | Automation | Background tasks the backend runs by itself after an event |
 | Automation log | A row written every time an automated step happens, with its status and any error |
 | Social connection | A client's authorized Facebook Page / Instagram account the API can publish to |
@@ -35,10 +37,12 @@ The platform removes repetitive operations *around* the team so people can focus
 
 | Folder | Purpose | Stack |
 | --- | --- | --- |
-| `pxl-api` | Backend API — data access, business rules, auth, AI calls, social publishing, in-process automation | NestJS 11, TypeScript, Drizzle ORM, PostgreSQL (Neon), JWT |
+| `pxl-api` | Backend API — data access, business rules, auth, AI calls, social publishing, in-process automation | NestJS 11, TypeScript, Drizzle ORM, PostgreSQL, JWT |
 | `pxl-portal` | Public marketing site, admin portal, and client portal | Next.js 16, React 19, TypeScript, Tailwind v4, TanStack Query/Table |
-| `pxl-n8n-workflows` | **Archived.** Original n8n workflow JSON, kept for reference only — all automation now runs inside `pxl-api` | n8n JSON (archived) |
+| `ai-agent` | Facebook Messenger AI auto-replies, LLM inference (OpenAI / Groq / Ollama) | NestJS, TypeScript, Prisma ORM, PostgreSQL, OpenAI SDK |
+| `deployment` | Docker Compose stack, Nginx reverse proxy, and environment templates for local self-hosting | Docker, Nginx, Cloudflare Tunnel |
 | `docs` | Planning, standards, and architecture documentation | Markdown |
+| `pxl-n8n-workflows` | **Archived.** Original n8n workflow JSON, kept for reference only — all automation now runs inside `pxl-api` | n8n JSON (archived) |
 
 ## System Architecture
 
@@ -55,14 +59,23 @@ flowchart TB
   Public["Public visitors / leads"] --> Portal
   Client["Client users"] --> Portal
   Team["Admin / team users"] --> Portal
+  Messenger["Facebook Messenger"] --> Agent
 
-  Portal["pxl-portal<br/>Next.js 16 + React 19 + Tailwind v4<br/>Hosted on Vercel"]
-  Portal --> API["pxl-api<br/>NestJS 11 + Drizzle + JWT<br/>Hosted on Render / Railway"]
+  subgraph Tunnel["Cloudflare Tunnel (self-hosted) or Cloud Hosting"]
+    Gateway["Nginx gateway"]
+  end
 
-  API --> DB["Neon PostgreSQL<br/>Single source of truth"]
-  API --> AI["AI layer<br/>Groq / OpenAI-compatible"]
+  Portal["pxl-portal<br/>Next.js 16 + React 19 + Tailwind v4"]
+  Portal --> Gateway
+  Gateway --> API["pxl-api<br/>NestJS 11 + Drizzle + JWT"]
+  Gateway --> Agent["ai-agent<br/>NestJS + Prisma + OpenAI SDK"]
+
+  API --> DB["PostgreSQL<br/>Single source of truth"]
+  API --> AI["AI layer<br/>Groq / OpenAI / Ollama"]
   API --> Sched["Scheduler<br/>NestJS cron jobs"]
   API --> Logs["automation_logs"]
+  Agent --> AgentDB["PostgreSQL<br/>Agent database"]
+  Agent --> LLM["LLM provider<br/>Groq / OpenAI / Ollama"]
 
   Sched --> Drive["Google Drive<br/>Client workspace folders"]
   Sched --> Calendar["Google Calendar<br/>Publishing reminders"]
@@ -73,19 +86,23 @@ flowchart TB
 
 ### Tech Stack
 
-**Backend (`pxl-api`)** — NestJS 11, TypeScript, Drizzle ORM over `node-postgres` (Neon-compatible), JWT auth (`passport-jwt`) with role guards, `helmet`, `@nestjs/throttler` rate limiting, `@nestjs/schedule` cron, `@nestjs/swagger` API docs, `googleapis` (Drive + Calendar), `nodemailer` (SMTP), `bcryptjs`, AES-encrypted social tokens, `zod` config validation, `class-validator` / `class-transformer`.
+**Backend (`pxl-api`)** — NestJS 11, TypeScript, Drizzle ORM over `node-postgres`, JWT auth (`passport-jwt`) with role guards, `helmet`, `@nestjs/throttler` rate limiting, `@nestjs/schedule` cron, `@nestjs/swagger` API docs, `googleapis` (Drive + Calendar), `nodemailer` (SMTP), `bcryptjs`, AES-encrypted social tokens, `zod` config validation, `class-validator` / `class-transformer`.
+
+**AI Agent (`ai-agent`)** — NestJS, TypeScript, Prisma ORM, PostgreSQL, OpenAI SDK (used for OpenAI, Groq, and Ollama — all share the same OpenAI-compatible API), JWT auth, prompt injection sanitization, in-memory webhook processing queue.
 
 **Frontend (`pxl-portal`)** — Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, TanStack React Query + React Table, Axios, Radix UI / shadcn/ui, Recharts, dnd-kit, `sonner`, `next-themes`, Zod. Auth state is handled client-side by an auth gate; every endpoint is still enforced on the backend.
 
-**Hosting / services** — Vercel (portal), Render or Railway (API), Neon (PostgreSQL), Google Drive + Calendar, Meta Graph API, SMTP, Groq/OpenAI-compatible AI. GitHub Actions for CI.
+**Hosting / services** — Self-hosted on a local laptop via Docker Compose + Nginx + Cloudflare Tunnel (primary), or cloud-hosted via Vercel (portal) + Render/Railway (API) + Neon (PostgreSQL). Google Drive + Calendar, Meta Graph API, SMTP, Groq/OpenAI/Ollama AI. GitHub Actions for CI.
 
 ### Ownership Rules
 
-- Neon PostgreSQL is the single source of truth.
+- PostgreSQL is the single source of truth.
 - The backend owns all business logic, permissions, and validation.
 - The frontend only displays screens and sends API requests.
 - AI keys and social tokens never reach the frontend; social tokens are stored encrypted.
 - All automation runs in-process in the backend — there is no external workflow tool to host.
+- The `ai-agent` is a separate backend with its own database; it handles Messenger AI and LLM inference.
+- The browser must never call Ollama or any LLM provider directly.
 - Google Drive stores files only; Google Calendar holds reminders only.
 - Social platforms are publishing destinations and metric sources, not the operational source of truth.
 
@@ -321,7 +338,7 @@ DATABASE_URL=postgresql://user:password@host:5432/pxl_automation
 JWT_SECRET=replace-with-a-long-random-secret
 JWT_EXPIRES_IN=7d
 
-# AI (Groq / OpenAI-compatible)
+# AI (Groq / OpenAI / Ollama)
 AI_PROVIDER=groq
 AI_MODEL=
 GROQ_API_KEY=
@@ -372,6 +389,42 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 
 Restart the affected app after changing its `.env`.
 
+### AI Agent — `ai-agent/.env` (see `ai-agent/.env.example`)
+
+```env
+# Database
+DATABASE_URL=postgresql://agent:password@localhost:5432/agent?schema=public
+
+# Auth
+JWT_SECRET=replace-with-a-long-random-value
+
+# Meta Messenger
+META_VERIFY_TOKEN=your-meta-webhook-verify-token
+META_APP_SECRET=your-meta-app-secret
+
+# AI Provider (openai, groq, or ollama)
+AI_PROVIDER=ollama
+
+# OpenAI
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+
+# Groq
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Ollama (self-hosted)
+OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
+OLLAMA_MODEL=website-assistant
+
+# Encryption
+ENCRYPTION_KEY=replace-with-a-stable-random-value
+```
+
+When deployed via Docker Compose, `host.docker.internal` lets the container
+reach Ollama on the Windows host. When running outside Docker, use
+`http://localhost:11434/v1`.
+
 ## Local Commands
 
 This is a pnpm workspace; run `pnpm install` in each app first.
@@ -404,6 +457,36 @@ pnpm run build
 
 ## Deployment Targets
 
+### Self-hosted (primary)
+
+The entire stack runs on a single laptop behind a Cloudflare Tunnel:
+
+| Layer | Where | Notes |
+| --- | --- | --- |
+| Frontend | Docker container (`pxl-portal`) | Next.js standalone server |
+| Main backend | Docker container (`pxl-api`) | NestJS API |
+| AI agent | Docker container (`ai-agent`) | Messenger AI + LLM proxy |
+| Databases | Docker containers (`pxl-db`, `agent-db`) | PostgreSQL 16 |
+| Reverse proxy | Docker container (`gateway`) | Nginx, only host-published port |
+| LLM inference | Host OS (`ollama`) | Runs on the NVIDIA GPU directly |
+| Public access | Docker container (`cloudflared`) | Cloudflare Tunnel, no port forwarding |
+
+```text
+Internet → Cloudflare Tunnel → Nginx (port 80)
+  → /                → pxl-portal
+  → /api/pxl/*       → pxl-api
+  → /api/agent/*     → ai-agent → Ollama (host GPU)
+```
+
+Ollama is bound to `127.0.0.1:11434` and is never exposed to the network.
+Docker containers reach it via `host.docker.internal`.
+
+**Hardware requirements**: 10th-gen Intel CPU, 32 GB RAM, NVIDIA GTX 1650 Ti
+(4 GB VRAM). Models must be ≤4B parameters (Q4_K_M quantization) to fit
+entirely in GPU memory.
+
+### Cloud-hosted (alternative)
+
 | Layer | Recommended host |
 | --- | --- |
 | Frontend | Vercel |
@@ -412,6 +495,7 @@ pnpm run build
 | Automation | In-process (runs inside the backend) |
 | Files | Google Drive |
 | Publishing | Meta Graph API |
+| AI | Groq or OpenAI cloud API |
 
 ## End-to-End Flow (MVP)
 
@@ -428,7 +512,7 @@ pnpm run build
 
 ## MVP Limitations & Future Work
 
-Humans still finalize strategy, edit AI drafts, and own client communication. Known future work includes video auto-captioning/clipping, cross-platform publishing beyond Meta (TikTok, LinkedIn, YouTube), richer report PDF generation, and validating Meta insight metric mappings against the live Graph API version.
+Humans still finalize strategy, edit AI drafts, and own client communication. Known future work includes video auto-captioning/clipping, cross-platform publishing beyond Meta (TikTok, LinkedIn, YouTube), richer report PDF generation, validating Meta insight metric mappings against the live Graph API version, and expanding the self-hosted Ollama model to support RAG with private client documents.
 
 ## Strategic Direction
 
